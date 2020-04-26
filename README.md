@@ -1,6 +1,6 @@
 ## PIVOTAL STORIES
 This is a simple Python script to retrieve stories from Pivotal projects.
-It is used to make a report of _X_ past days accepted stories for all interesting projects.
+It is used to make a report of _X_ past days accepted (or in which states you prefer) stories for all interesting projects.
 
 Since a report is made it is sent to Slack as a message.
 
