@@ -30,11 +30,13 @@ pivotal = Pivotal(pivotal_token)
 # a week ago from today
 week_ago = datetime.datetime.now() - datetime.timedelta(days=7)
 update_since = f"{week_ago:%m/%d/%Y}"
+project_no_stories = []
 for project_id in project_ids:
     # retrieve project stories
     project = pivotal.get_project(project_id)
     stories = pivotal.get_stories(project_id, update_since)
     if len(stories) == 0:
+        project_no_stories.append(project_id)
         continue
     # get printable strings
     printable_stories = get_printable_stories(stories, pivotal.get_project_membership(project_id))
@@ -44,4 +46,12 @@ for project_id in project_ids:
         slack_message += "%s\n\n" % ps
     slack_message += "\n\n"
     send_slack_message(slack_token, slack_channel, slack_message)
+    send_slack_message(slack_token, slack_channel, "#" * 25)
+
+
+for project_id in project_no_stories:
+    project = pivotal.get_project(project_id)
+    slack_message = "*<https://www.pivotaltracker.com/n/projects/%d|%s>*\n" % (project['id'], project['name'])
+    send_slack_message(slack_token, slack_channel, slack_message)
+    send_slack_message(slack_token, slack_channel, "*no stories*")
     send_slack_message(slack_token, slack_channel, "#" * 25)
