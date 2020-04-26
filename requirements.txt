@@ -1,5 +1,4 @@
 requests==2.21.0
-tabulate
 dateutil
 slack
 certifi
