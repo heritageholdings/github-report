@@ -22,15 +22,15 @@ week_ago = datetime.datetime.now() - datetime.timedelta(days=7)
 update_since = f"{week_ago:%m/%d/%Y}"
 
 project = pivotal.get_project(project_id)
-stories = pivotal.get_stories(project_id, update_since)
+stories = pivotal.get_stories(project_id, update_since, ['delivered','accepted'])
 printable_stories = get_printable_stories(stories, pivotal.get_project_membership(project_id))
 
 # compose slack message
 slack_message = ""
 for ps in printable_stories:
     slack_message += "%s\n\n" % ps
-
+# send message to slack
 send_slack_message("myslacktoken", "#my_channel", slack_message)
 ```
 
-<img src="slack.png" height="400" />
+<img src="slack.png" height="300" />
