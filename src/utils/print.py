@@ -52,7 +52,7 @@ def get_printable_stories(stories, members):
     for t in stories:
         story_type = t.get("story_type", "")
         owners = get_owners(t["owner_ids"])
-        story_type_icon = stories_icon.get(story_type, "")
+        story_type_icon = stories_icon.get(story_type, "❓")
         story = "<https://www.pivotaltracker.com/n/projects/%d/stories/%d|%s> - _%s_ %s" % (
             t['project_id'],
             t['id'],
