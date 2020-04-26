@@ -32,3 +32,5 @@ for ps in printable_stories:
 
 send_slack_message("myslacktoken", "#my_channel", slack_message)
 ```
+
+<img src="slack.png" height="600" />

@@ -1,22 +1,13 @@
 import datetime
-from os.path import join, dirname
+import os
 from utils.pivotal import Pivotal
 from utils.print import get_printable_stories
 from utils.slack import send_slack_message
 
-# store your token in pivotal.token file as plain text
-pivotal_token = ""
-# store your token in slack.token file as plain text
-slack_token = ""
-try:
-    with open(join(dirname(__file__), 'pivotal.token'), 'r') as f:
-        pivotal_token = f.read()
-
-    with open(join(dirname(__file__), 'slack.token'), 'r') as f:
-        slack_token = f.read()
-except Exception as ex:
-    print(ex)
-    exit(1)
+# retrieve pivotal token from env variables
+pivotal_token = os.getenv('PIVOTAL_TOKEN', "")
+# retrieve slack token from env variables
+slack_token = os.getenv('SLACK_TOKEN', "")
 
 if 0 in (len(pivotal_token), len(slack_token)):
     print('provide a valid token in slack/pivotal.token file')
@@ -53,3 +44,4 @@ for project_id in project_ids:
         slack_message += "%s\n\n" % ps
     slack_message += "\n\n"
     send_slack_message(slack_token, slack_channel, slack_message)
+    send_slack_message(slack_token, slack_channel, "#" * 25)
