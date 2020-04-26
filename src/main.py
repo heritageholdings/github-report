@@ -14,7 +14,7 @@ if 0 in (len(pivotal_token), len(slack_token)):
     exit(1)
 
 # slack channel to send reports
-slack_channel = "#io_status"
+slack_channel = "#dev_io"
 # define all project ids we want to print stories overview
 project_ids = [2048617,  # io / app
                2116794,  # io / api backend
@@ -47,7 +47,6 @@ for project_id in project_ids:
     slack_message += "\n\n"
     send_slack_message(slack_token, slack_channel, slack_message)
     send_slack_message(slack_token, slack_channel, "#" * 25)
-
 
 for project_id in project_no_stories:
     project = pivotal.get_project(project_id)
