@@ -48,7 +48,7 @@ for project_id in project_ids:
     # get printable strings
     printable_stories = get_printable_stories(stories, pivotal.get_project_membership(project_id))
     slack_message = "*<https://www.pivotaltracker.com/n/projects/%d|%s>*\n" % (project['id'], project['name'])
-    # compost slack message
+    # compose slack message
     for ps in printable_stories:
         slack_message += "%s\n\n" % ps
     slack_message += "\n\n"

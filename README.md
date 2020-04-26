@@ -25,7 +25,7 @@ project = pivotal.get_project(project_id)
 stories = pivotal.get_stories(project_id, update_since)
 printable_stories = get_printable_stories(stories, pivotal.get_project_membership(project_id))
 
-# compost slack message
+# compose slack message
 slack_message = ""
 for ps in printable_stories:
     slack_message += "%s\n\n" % ps
