@@ -20,7 +20,7 @@ project_ids = [2048617,  # io / app
                2116794,  # io / api backend
                2088623,  # io / api per le PA
                2147248,  # io / developer & admin portal
-               2325988,  # io / infrastructure
+               2431303,  # io / infrastructure
                2420220,  # io / integration
                2169201,  # io / io.italia.it
                2161158,  # io / pagopa proxy
@@ -31,7 +31,7 @@ pivotal = Pivotal(pivotal_token)
 week_ago = datetime.datetime.now() - datetime.timedelta(days=7)
 update_since = f"{week_ago:%m/%d/%Y}"
 project_no_stories = []
-for project_id in project_ids:
+for project_id in [2431303]:
     # retrieve project stories
     project = pivotal.get_project(project_id)
     stories = pivotal.get_stories(project_id, update_since)
