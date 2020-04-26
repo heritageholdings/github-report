@@ -1,9 +1,3 @@
-
-from tabulate import tabulate
-
-
-
-
 def print_me(me):
     """
     get a printable version of me
@@ -26,14 +20,6 @@ stories_icon = {"feature": "🌟",
                 "bug": "🐞",
                 "chore": "⚙️",
                 "release": "🏁"}
-
-
-def print_project_members(project_membership):
-    persons = []
-    for m in project_membership:
-        person = m['person']
-        persons.append([person['id'], m['role'], person['name'], person['username'], person['initials']])
-    return tabulate(persons, headers=["id", "role", "name", "username", "initials"])
 
 
 def get_printable_stories(stories, members):
@@ -75,4 +61,3 @@ def get_printable_stories(stories, members):
             ' & '.join(owners),)
         printable_stories.append(story)
     return printable_stories
-

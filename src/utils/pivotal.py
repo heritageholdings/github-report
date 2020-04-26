@@ -4,7 +4,9 @@ SERVICES_URL = "https://www.pivotaltracker.com/services/v5"
 
 
 class Pivotal:
-
+    '''
+    An utility class to get data from Pivotal APIs
+    '''
     def __init__(self, api_token, api_url=SERVICES_URL):
         self._api_token = api_token
         self._auth_header = {'X-TrackerToken': self._api_token}
