@@ -3,4 +3,3 @@ python-dateutil
 slack
 slackclient
 certifi
-pivotal-py
