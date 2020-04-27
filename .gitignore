@@ -76,3 +76,5 @@ fabric.properties
 *.iml
 .idea/*.xml
 .idea/inspectionProfiles/*.xml
+
+.vscode

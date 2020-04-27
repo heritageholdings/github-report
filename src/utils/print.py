@@ -12,11 +12,12 @@ email: {me["email"]}
 projects: {len(me["projects"])}
 '''
     for p in me["projects"]:
-        to_print += "\t* %s (%s - %d)\n" % (p["project_name"], p["role"], p["project_id"])
+        to_print += "\t* %s (%s - %d)\n" % (p["project_name"],
+                                            p["role"], p["project_id"])
     return to_print
 
 
-stories_icon = {"feature": "🌟",
+stories_icon = {"feature": "⭐️",
                 "bug": "🐞",
                 "chore": "⚙️",
                 "release": "🏁"}
@@ -37,7 +38,8 @@ def get_printable_stories(stories, members):
                 ows.append(members_cache[owner])
                 owners_ids.remove(owner)
         for owner_id in owners_ids:
-            owner = list(filter(lambda x: x["person"]["id"] in owners_ids, members))
+            owner = list(
+                filter(lambda x: x["person"]["id"] in owners_ids, members))
             if len(owner) == 0:
                 owner = "n/a"
             else:
@@ -48,16 +50,17 @@ def get_printable_stories(stories, members):
 
     printable_stories = []
     # sort by story state
-    stories.sort(key=lambda r: r["current_state"])
+    stories.sort(key=lambda r: r["story_type"])
     for t in stories:
         story_type = t.get("story_type", "")
         owners = get_owners(t["owner_ids"])
-        story_type_icon = stories_icon.get(story_type, "❓")
-        story = "<https://www.pivotaltracker.com/n/projects/%d/stories/%d|%s> - _%s_ %s" % (
+        estimate = int(t.get("estimate", "1"))
+        story_type_icon = stories_icon.get(story_type, "❓") * max(estimate, 1)
+        story = "<https://www.pivotaltracker.com/n/projects/%d/stories/%d|%s> %s %s" % (
             t['project_id'],
             t['id'],
             story_type_icon,
             t.get('name', ""),
-            "" if len(owners) == 0 else ("(%s)" % " & ".join(owners)),)
+            "" if len(owners) == 0 else ("_(%s)_" % " & ".join(owners)),)
         printable_stories.append(story)
     return printable_stories
