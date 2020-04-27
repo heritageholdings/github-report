@@ -1,0 +1,41 @@
+# Azure DevOps pipeline to generate a report of all the stories that have been accepted in the 
+# last 7 days period for a given list of Pivotal projects. Optionally, the report can also be 
+# sent to a Slack channel.
+#
+# You need to add the following pipeline variables using the Azure DevOps UI: 
+# - PIVOTAL_TOKEN:       [mandatory] a valid Pivotal token to access the stories in the projects
+# - PIVOTAL_PROJECT_IDS: [optional] csv list of project IDs (by default an hard-coded list is used)
+# - SCLACK_CHANNEL:      [optional] the Slack channel name (default: "#io_dev"; skip Slack if "")
+# - SLACK_TOKEN:         [optional] a valid Slack token (mandatory if SCLACK_CHANNEL != "")
+#
+# If you want to run this pipeline by using scheduled triggers, you must define your scheduling
+# preferences by editing the pipeline trigger configuration using the Azure DevOps UI.
+
+variables:
+  - name: PYTHON_VERSION
+    value: '3.8.2'
+
+# We want to run this pipeline by only using manual or scheduled triggers (disable PR and CI triggers)
+trigger: none
+pr: none
+
+jobs:  
+  - job: 'Pivotal_stories_report' 
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+      - checkout: self
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: '$(PYTHON_VERSION)'
+
+      - bash: |
+          pip3 install -r ./requirements.txt
+        displayName: 'Install dependencies'
+
+      - bash: |
+          python3 src/main.py
+        env:
+          PIVOTAL_TOKEN: '$(PIVOTAL_TOKEN)'
+          SLACK_TOKEN: '$(SLACK_TOKEN)'
+        displayName: 'Run python script'

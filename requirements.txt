@@ -1,4 +1,5 @@
 requests==2.21.0
-dateutil
+python-dateutil
 slack
+slackclient
 certifi
