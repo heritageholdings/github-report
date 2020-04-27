@@ -12,30 +12,30 @@
 # preferences by editing the pipeline trigger configuration using the Azure DevOps UI.
 
 variables:
-    PYTHON_VERSION: '3.8.2'
-  
+  - name: PYTHON_VERSION
+    value: '3.8.2'
+
 # We want to run this pipeline by only using manual or scheduled triggers (disable PR and CI triggers)
 trigger: none
 pr: none
 
 jobs:  
-- job: 'Pivotal_stories_report' 
+  - job: 'Pivotal_stories_report' 
     pool:
-    vmImage: 'ubuntu-latest'
+      vmImage: 'ubuntu-latest'
     steps:
-    - checkout: self
-
-    - task: UsePythonVersion@0
+      - checkout: self
+      - task: UsePythonVersion@0
         inputs:
-        versionSpec: '$(PYTHON_VERSION)'
+          versionSpec: '$(PYTHON_VERSION)'
 
-    - bash: |
-        pip3 install -r ./requirements.txt
+      - bash: |
+          pip3 install -r ./requirements.txt
         displayName: 'Install dependencies'
 
-    - bash: |
-        python3 src/main.py
+      - bash: |
+          python3 src/main.py
         env:
-        PIVOTAL_TOKEN: '$(PIVOTAL_TOKEN)'
-        SLACK_TOKEN: '$(SLACK_TOKEN)'
+          PIVOTAL_TOKEN: '$(PIVOTAL_TOKEN)'
+          SLACK_TOKEN: '$(SLACK_TOKEN)'
         displayName: 'Run python script'
