@@ -6,32 +6,43 @@ from utils.slack import send_slack_message
 
 # retrieve pivotal token from env variables
 pivotal_token = os.getenv('PIVOTAL_TOKEN', "")
-# retrieve slack token from env variables
-slack_token = os.getenv('SLACK_TOKEN', "")
+# retrive the csv list of Pivotal project ids we want to print stories overview
+project_ids_csv = os.getenv('PIVOTAL_PROJECT_IDS', "")
 
-if 0 in (len(pivotal_token), len(slack_token)):
-    print('provide a valid token in slack/pivotal.token file')
+# retrieve slack token from env variables (optional)
+slack_token = os.getenv('SLACK_TOKEN', "")
+# retrieve slack channel name to send reports from env variables
+slack_channel = os.getenv('SLACK_CHANNEL', "#dev_io")
+
+if len(pivotal_token) <= 0:
+    print('provide a valid Pivotal token in variable PIVOTAL_TOKEN')
     exit(1)
 
-# slack channel to send reports
-slack_channel = "#dev_io"
-# define all project ids we want to print stories overview
-project_ids = [2048617,  # io / app
-               2116794,  # io / api backend
-               2088623,  # io / api per le PA
-               2147248,  # io / developer & admin portal
-               2431303,  # io / infrastructure
-               2420220,  # io / integration
-               2169201,  # io / io.italia.it
-               2161158,  # io / pagopa proxy
-               ]
-
+if len(project_ids_csv) <= 0:
+    # use the default list of projects if not specified
+    project_ids = [2048617,  # io / app
+                   2116794,  # io / api backend
+                   2088623,  # io / api per le PA
+                   2147248,  # io / developer & admin portal
+                   2431303,  # io / infrastructure
+                   2420220,  # io / integration
+                   2169201,  # io / io.italia.it
+                   2161158   # io / pagopa proxy
+                  ]
+else:
+    # use the list of projects ids provided in input
+    project_ids = list(map(int, project_ids_csv.split(",")))
+    
+if len(slack_channel) > 0 and len(slack_token) <= 0:
+    print('provide a valid Slack token in variable SLACK_TOKEN')
+    exit(1)    
+    
 pivotal = Pivotal(pivotal_token)
 # a week ago from today
 week_ago = datetime.datetime.now() - datetime.timedelta(days=7)
 update_since = f"{week_ago:%m/%d/%Y}"
 project_no_stories = []
-for project_id in [2431303]:
+for project_id in project_ids:
     # retrieve project stories
     project = pivotal.get_project(project_id)
     stories = pivotal.get_stories(project_id, update_since)
@@ -45,12 +56,23 @@ for project_id in [2431303]:
     for ps in printable_stories:
         slack_message += "%s\n\n" % ps
     slack_message += "\n\n"
-    send_slack_message(slack_token, slack_channel, slack_message)
-    send_slack_message(slack_token, slack_channel, "#" * 25)
+    # send message to Slack channel if specified; print to stdout otherwise
+    if len(slack_channel) > 0:
+        send_slack_message(slack_token, slack_channel, slack_message)
+        send_slack_message(slack_token, slack_channel, "#" * 25)
+    else: 
+        print(slack_message)
+        print("#" * 25)
 
 for project_id in project_no_stories:
     project = pivotal.get_project(project_id)
     slack_message = "*<https://www.pivotaltracker.com/n/projects/%d|%s>*\n" % (project['id'], project['name'])
-    send_slack_message(slack_token, slack_channel, slack_message)
-    send_slack_message(slack_token, slack_channel, "*no stories*")
-    send_slack_message(slack_token, slack_channel, "#" * 25)
+    
+    if len(slack_channel) > 0:
+        send_slack_message(slack_token, slack_channel, slack_message)
+        send_slack_message(slack_token, slack_channel, "*no stories*")
+        send_slack_message(slack_token, slack_channel, "#" * 25)
+    else: 
+        print(slack_message)
+        print("*no stories*")
+        print("#" * 25)
