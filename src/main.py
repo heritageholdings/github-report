@@ -12,7 +12,7 @@ project_ids_csv = os.getenv('PIVOTAL_PROJECT_IDS', "")
 # retrieve slack token from env variables (optional)
 slack_token = os.getenv('SLACK_TOKEN', "")
 # retrieve slack channel name to send reports from env variables
-slack_channel = os.getenv('SLACK_CHANNEL', "#io_status")
+slack_channel = os.getenv('SLACK_CHANNEL', "#dev_io")
 
 if len(pivotal_token) <= 0:
     print('provide a valid Pivotal token in variable PIVOTAL_TOKEN')
