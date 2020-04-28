@@ -51,7 +51,7 @@ send_slack_message_blocks(slack_token, slack_channel, [
             "text": "Hello, I'm the Pivotal cat",
             "emoji": True
         },
-        "image_url": "http://lorempixel.com/200/200/cats/?" + str(datetime.datetime.now()),
+        "image_url": "http://placekitten.com/200/200?image=%d" % (datetime.datetime.timestamp(datetime.datetime.now()) % 16),
         "alt_text": "Pivotal cat"
     },
     {
