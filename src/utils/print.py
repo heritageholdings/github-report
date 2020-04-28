@@ -23,6 +23,22 @@ stories_icon = {"feature": "⭐️",
                 "release": "🏁"}
 
 
+def get_stories_count_recap(stories):
+    """
+    stories is a dict where the key is the story type and the value is a number
+    :param stories:
+    :return: a string
+    """
+    to_return = []
+    print_order = ["release", "feature", "bug", "chore"]
+    for story in print_order:
+        if story not in stories:
+            continue
+        total = stories[story]
+        to_return.append("%s %d" % (stories_icon.get(story, "❓"), total))
+    return ", ".join(to_return)
+
+
 def get_printable_stories(stories, members):
     """
     :param stories: a list of stories
