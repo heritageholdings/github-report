@@ -1,12 +1,12 @@
 import datetime
 import os
 from utils.pivotal import Pivotal
-from utils.print import get_printable_stories
+from utils.print import get_printable_stories, get_stories_count_recap
 from utils.slack import send_slack_message_blocks
 
 # retrieve pivotal token from env variables
 pivotal_token = os.getenv('PIVOTAL_TOKEN', "")
-# retrive the csv list of Pivotal project ids we want to print stories overview
+# retrieve the csv list of Pivotal project ids we want to print stories overview
 project_ids_csv = os.getenv('PIVOTAL_PROJECT_IDS', "")
 
 # retrieve slack token from env variables (optional)
@@ -28,21 +28,39 @@ if len(project_ids_csv) <= 0:
         2431303,  # io / infrastructure
         2420220,  # io / integration
         2169201,  # io / io.italia.it
-        2161158   # io / pagopa proxy
+        2161158  # io / pagopa proxy
     ]
 else:
     # use the list of projects ids provided in input
     project_ids = list(map(int, project_ids_csv.split(",")))
 
-if len(slack_channel) > 0 and len(slack_token) <= 0:
+if len(slack_channel) < 0 <= len(slack_token):
     print('provide a valid Slack token in variable SLACK_TOKEN')
     exit(1)
 
+days_before = 7
 pivotal = Pivotal(pivotal_token)
 # a week ago from today
-week_ago = datetime.datetime.now() - datetime.timedelta(days=7)
+week_ago = datetime.datetime.now() - datetime.timedelta(days=days_before)
 update_since = f"{week_ago:%m/%d/%Y}"
 
+shipped_stories_per_type = {}
+project_no_stories = []
+total_stories = 0
+# a list of tuple: [(project,stories) ...]
+project_and_stories = []
+for project_id in project_ids:
+    message_blocks = []
+    # retrieve project stories
+    project = pivotal.get_project(project_id)
+    stories = pivotal.get_stories(project_id, update_since)
+    project_and_stories.append((project, stories))
+    for s in stories:
+        shipped_stories_per_type[s['story_type']] = shipped_stories_per_type.get(s['story_type'], 0)
+        shipped_stories_per_type[s['story_type']] += 1
+        total_stories += 1
+
+# compose the recap message
 send_slack_message_blocks(slack_token, slack_channel, [
     {
         "type": "image",
@@ -51,28 +69,27 @@ send_slack_message_blocks(slack_token, slack_channel, [
             "text": "Hello, I'm the Pivotal cat",
             "emoji": True
         },
-        "image_url": "http://placekitten.com/200/200?image=%d" % (datetime.datetime.timestamp(datetime.datetime.now()) % 16),
+        "image_url": "http://placekitten.com/200/200?image=%d" % (
+                datetime.datetime.timestamp(datetime.datetime.now()) % 16),
         "alt_text": "Pivotal cat"
     },
     {
         "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "Here's what has been shipped during the last 7 days."
-                }
+        "text": {
+            "type": "mrkdwn",
+            "text": "In the last %d days we shipped %d stories (%s)" % (
+                days_before, total_stories, get_stories_count_recap(shipped_stories_per_type))
+        }
     },
 ])
 
-project_no_stories = []
-
-for project_id in project_ids:
+for project, stories in project_and_stories:
     message_blocks = []
-    # retrieve project stories
-    project = pivotal.get_project(project_id)
-    stories = pivotal.get_stories(project_id, update_since)
+    project_id = project['id']
     if len(stories) == 0:
         project_no_stories.append(project_id)
         continue
+
     # get printable strings
     printable_stories = get_printable_stories(
         stories, pivotal.get_project_membership(project_id))
@@ -121,7 +138,7 @@ if len(project_no_stories) > 0:
             }
         ])
     else:
+        # send message to Slack channel if specified; print to stdout otherwise
         print(message_blocks)
 
 
-# send message to Slack channel if specified; print to stdout otherwise
