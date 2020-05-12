@@ -55,7 +55,7 @@ def get_printable_stories(stories, members):
                 owners_ids.remove(owner)
         for owner_id in owners_ids:
             owner = list(
-                filter(lambda x: x["person"]["id"] in owners_ids, members))
+                filter(lambda x: x["person"]["id"] == owner_id, members))
             if len(owner) == 0:
                 owner = "n/a"
             else:
