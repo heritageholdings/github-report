@@ -13,7 +13,7 @@
 
 variables:
   - name: PYTHON_VERSION
-    value: '3.8.2'
+    value: '3.x'
 
 # We want to run this pipeline by only using manual or scheduled triggers (disable PR and CI triggers)
 trigger: none
