@@ -22,6 +22,7 @@ if len(project_ids_csv) <= 0:
     # use the default list of projects if not specified
     project_ids = [
         2048617,  # io / app
+        2449547,  # bonus vacanze
         2116794,  # io / api backend
         2088623,  # io / api per le PA
         2147248,  # io / developer & admin portal
@@ -50,7 +51,6 @@ total_stories = 0
 # a list of tuple: [(project,stories) ...]
 project_and_stories = []
 for project_id in project_ids:
-    message_blocks = []
     # retrieve project stories
     project = pivotal.get_project(project_id)
     stories = pivotal.get_stories(project_id, update_since)
@@ -117,7 +117,11 @@ for project, stories in project_and_stories:
     })
 
     if len(slack_channel) > 0:
-        send_slack_message_blocks(slack_token, slack_channel, message_blocks)
+        slice = 10
+        count = 0
+        while count <= len(message_blocks):
+            send_slack_message_blocks(slack_token, slack_channel, message_blocks[count:count+slice])
+            count += slice
     else:
         print(message_blocks)
 
