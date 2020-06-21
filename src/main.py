@@ -1,7 +1,7 @@
 import datetime
 import os
 from utils.pivotal import Pivotal
-from utils.print import get_printable_stories, get_stories_count_recap
+from utils.print import get_printable_stories, get_stories_count_recap, stories_count_per_type
 from utils.slack import send_slack_message_blocks
 
 # retrieve pivotal token from env variables
@@ -46,19 +46,27 @@ week_ago = datetime.datetime.now() - datetime.timedelta(days=days_before)
 update_since = f"{week_ago:%m/%d/%Y}"
 
 shipped_stories_per_type = {}
+rejected_stories_per_type = {}
 project_no_stories = []
 total_stories = 0
+total_rejected_stories = 0
 # a list of tuple: [(project,stories) ...]
 project_and_stories = []
 for project_id in project_ids:
     # retrieve project stories
     project = pivotal.get_project(project_id)
-    stories = pivotal.get_stories(project_id, update_since)
-    project_and_stories.append((project, stories))
-    for s in stories:
-        shipped_stories_per_type[s['story_type']] = shipped_stories_per_type.get(s['story_type'], 0)
-        shipped_stories_per_type[s['story_type']] += 1
-        total_stories += 1
+    all_stories = pivotal.get_stories(project_id, update_since, ["accepted","rejected"])
+    accepted = list(filter(lambda s: s["current_state"] == "accepted",all_stories))
+    rejected = list(filter(lambda s: s["current_state"] == "rejected",all_stories))
+    project_and_stories.append((project, accepted))
+    t, shipped_stories_per_type = stories_count_per_type(accepted,shipped_stories_per_type)
+    total_stories += t
+    t, rejected_stories_per_type = stories_count_per_type(rejected,rejected_stories_per_type)
+    total_rejected_stories += t
+
+if total_stories == 0:
+    print("there are no accepted stories in the last %d days" % days_before)
+    exit(0)
 
 # compose the recap message
 send_slack_message_blocks(slack_token, slack_channel, [
@@ -77,11 +85,25 @@ send_slack_message_blocks(slack_token, slack_channel, [
         "type": "section",
         "text": {
             "type": "mrkdwn",
-            "text": "In the last %d days we shipped %d stories (%s)" % (
+            "text": "In the last %d days we shipped *%d stories* (%s)" % (
                 days_before, total_stories, get_stories_count_recap(shipped_stories_per_type))
         }
     },
+
 ])
+
+if total_rejected_stories > 0:
+    send_slack_message_blocks(slack_token, slack_channel, [
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*%d stories* are been *rejected* (%s)" % (
+                    total_rejected_stories, get_stories_count_recap(rejected_stories_per_type))
+            }
+        },
+
+    ])
 
 for project, stories in project_and_stories:
     message_blocks = []
@@ -93,12 +115,13 @@ for project, stories in project_and_stories:
     # get printable strings
     printable_stories = get_printable_stories(
         stories, pivotal.get_project_membership(project_id))
+    total_stories, stories_per_type = stories_count_per_type(stories)
     message_blocks.append({
         "type": "section",
         "text": {
             "type": "mrkdwn",
-            "text": "*<https://www.pivotaltracker.com/n/projects/%d|%s>* (%d stories accepted)\n" % (
-                project['id'], project['name'], len(printable_stories))
+            "text": "*<https://www.pivotaltracker.com/n/projects/%d|%s>* (%d stories accepted - %s)\n" % (
+                project['id'], project['name'], total_stories, get_stories_count_recap(stories_per_type))
         }
     })
 

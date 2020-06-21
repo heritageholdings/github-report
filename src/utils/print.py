@@ -38,6 +38,20 @@ def get_stories_count_recap(stories):
         to_return.append("%s %d" % (stories_icon.get(story, "❓"), total))
     return ", ".join(to_return)
 
+def stories_count_per_type(stories, stories_per_type = {}):
+    """
+    return a tuple of two:
+    first: stories count
+    second: a dictionary where the key is the story type and the value the relative count
+    :param stories: a list of stories
+    :return:
+    """
+    total_stories = 0
+    for s in stories:
+        stories_per_type[s['story_type']] = stories_per_type.get(s['story_type'], 0)
+        stories_per_type[s['story_type']] += 1
+        total_stories += 1
+    return total_stories,stories_per_type
 
 def get_printable_stories(stories, members):
     """
