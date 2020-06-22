@@ -120,7 +120,7 @@ for project, stories in project_and_stories:
         "type": "section",
         "text": {
             "type": "mrkdwn",
-            "text": "*<https://www.pivotaltracker.com/n/projects/%d|%s>* (%d stories accepted - %s)\n" % (
+            "text": "*<https://www.pivotaltracker.com/n/projects/%d|%s>* (%d stories accepted: %s)\n" % (
                 project['id'], project['name'], total_stories, get_stories_count_recap(stories_per_type))
         }
     })
