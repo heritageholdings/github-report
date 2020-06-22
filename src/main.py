@@ -115,7 +115,7 @@ for project, stories in project_and_stories:
     # get printable strings
     printable_stories = get_printable_stories(
         stories, pivotal.get_project_membership(project_id))
-    total_stories, stories_per_type = stories_count_per_type(stories)
+    total_stories, stories_per_type = stories_count_per_type(stories, {})
     message_blocks.append({
         "type": "section",
         "text": {
