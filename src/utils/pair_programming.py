@@ -57,12 +57,16 @@ def get_pair_programming_message():
 			for x in range(couples):
 				pair_1 = devs_week_list[index]
 				is_random = False
+				# this happens when the team is odd
 				if index + 1 >= devs_len:
 					# pick it randomly
 					is_random = True
 					temp_devs = devs_week_list[:]
+					# remove the developer pair_1
 					del temp_devs[0]
+					# from developer list to a list of their index (all except the pair_1)
 					temp_devs = list(map(lambda i: i[0], enumerate(temp_devs)))
+					# pick an index randomly
 					pair_2_index = temp_devs[random.randint(0, len(temp_devs) - 1)]
 				else:
 					pair_2_index = index + 1
