@@ -2,26 +2,28 @@ from dataclasses import dataclass
 from datetime import date
 import random
 
+
 @dataclass
 class Developer:
 	name: str
 	slack_id: str
 	projects: list
 
+
 app_project = "IO - App"
 backend_project = "IO - Backend"
 # new developers should be added at the END of this list
-developers = (Developer("Matteo Boschi","",[app_project]),
-              Developer("Cristiano Tofani","",[app_project]),
-              Developer("Fabrizio Filizola","",[app_project]),
-              Developer("Simone Biffi","",[app_project]),
-              Developer("Giovanni Mancini","",[app_project]),
-              Developer("Danilo Spinelli","",[backend_project]),
-              Developer("Emanuele De Cupis","",[backend_project]),
-			  Developer("Alessio Dore","",[backend_project]),
-			  Developer("Francesco Persico","",[backend_project]),
-			  Developer("Simone Infante","",[backend_project]),
-              Developer("Daniele Manni","",[backend_project]))
+developers = (Developer("Matteo Boschi", "", [app_project]),
+              Developer("Cristiano Tofani", "", [app_project]),
+              Developer("Fabrizio Filizola", "", [app_project]),
+              Developer("Simone Biffi", "", [app_project]),
+              Developer("Giovanni Mancini", "", [app_project]),
+              Developer("Danilo Spinelli", "", [backend_project]),
+              Developer("Emanuele De Cupis", "", [backend_project]),
+              Developer("Alessio Dore", "", [backend_project]),
+              Developer("Francesco Persico", "", [backend_project]),
+              Developer("Simone Infante", "", [backend_project]),
+              Developer("Daniele Manni", "", [backend_project]))
 
 # mapping project / developer
 developers_for_project = {}
@@ -60,14 +62,12 @@ def get_pair_programming_message():
 					is_random = True
 					temp_devs = devs_week_list[:]
 					del temp_devs[0]
-					temp_devs = list(map(lambda i : i[0], enumerate(temp_devs)))
-					pair_2_index = temp_devs[random.randint(0,len(temp_devs) - 1)]
+					temp_devs = list(map(lambda i: i[0], enumerate(temp_devs)))
+					pair_2_index = temp_devs[random.randint(0, len(temp_devs) - 1)]
 				else:
 					pair_2_index = index + 1
 				pair_2 = devs_week_list[pair_2_index]
-				msg +='- %s / %s%s\n' % (pair_1.name, pair_2.name, '(*r)' if is_random else '')
+				msg += '- %s / %s%s\n' % (pair_1.name, pair_2.name, '(*r)' if is_random else '')
 				index += 2
 				c += 1
 	return msg
-
-
