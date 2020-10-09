@@ -173,14 +173,15 @@ if len(project_no_stories) > 0:
 
 ### pair programming
 pair_programming_message = get_pair_programming_message()
-send_slack_message_blocks(slack_token, slack_channel, [
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": ":desktop_computer::bulb::computer:" + pair_programming_message
+if len(slack_channel) > 0:
+    send_slack_message_blocks(slack_token, slack_channel, [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": ":desktop_computer::bulb::computer:" + pair_programming_message
+                    }
                 }
-            }
-        ])
+            ])
 
 
