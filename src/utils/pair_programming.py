@@ -75,4 +75,5 @@ def get_pair_programming_message():
 				msg += '- %s / %s%s\n' % (pair_1.name, pair_2.name, '(*r)' if is_random else '')
 				index += 2
 				c += 1
+	msg += '\n:movie_camera: it would be nice if you record your programming session\n> Share your knowledge. It is a way to achieve immortality.\n'
 	return msg
