@@ -41,7 +41,7 @@ def get_pair_programming_message():
 	weekNumber = date.today().isocalendar()[1]
 	msg = 'It would be nice if you take about 2 hours a week for <https://martinfowler.com/articles/on-pair-programming.html|pair programming>\n'
 	msg += '\n> the best programs and designs are done by pairs, because you can criticise each other, and find each others errors, and use the best ideas\n'
-	msg += '\nhere the weekly suggestion (`*r` means randomly picked)'
+	msg += '\nhere the weekly advice (`*r` means randomly picked)'
 	msg += '\n'
 	for p in developers_for_project.keys():
 		if len(developers_for_project[p]) > 1:
