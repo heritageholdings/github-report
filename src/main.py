@@ -1,5 +1,7 @@
 import datetime
 import os
+
+from utils.pair_programming import get_pair_programming_message
 from utils.pivotal import Pivotal
 from utils.print import get_printable_stories, get_stories_count_recap, stories_count_per_type
 from utils.slack import send_slack_message_blocks
@@ -168,5 +170,18 @@ if len(project_no_stories) > 0:
     else:
         # send message to Slack channel if specified; print to stdout otherwise
         print(message_blocks)
+
+### pair programming
+pair_programming_message = get_pair_programming_message()
+if len(slack_channel) > 0:
+    send_slack_message_blocks(slack_token, slack_channel, [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": ":desktop_computer::bulb::computer:" + pair_programming_message
+                    }
+                }
+            ])
 
 
