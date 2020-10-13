@@ -75,5 +75,5 @@ def get_pair_programming_message():
 				msg += '- %s / %s%s\n' % (pair_1.name, pair_2.name, '(*r)' if is_random else '')
 				index += 2
 				c += 1
-	msg += '\n:movie_camera: remember to record your programming session\n> Share your knowledge. It is a way to achieve immortality.\n'
+	msg += '\n:movie_camera: remember to <https://drive.google.com/drive/folders/1D7eYdI01lCV-43GJXFR658Geba16xqTB?usp=sharing|record your programming session>\n> Share your knowledge. It is a way to achieve immortality.\n'
 	return msg
