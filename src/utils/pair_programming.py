@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from datetime import date
 import random
 
 
@@ -10,21 +9,21 @@ class Developer:
 	projects: list
 
 
-app_project = "IO - App"
-backend_project = "IO - Backend"
+project = "IO - Developers"
 # new developers should be added at the END of this list
-developers = (Developer("Matteo Boschi", "", [app_project]),
-              Developer("Cristiano Tofani", "", [app_project]),
-              Developer("Fabrizio Filizola", "", [app_project]),
-              Developer("Simone Biffi", "", [app_project]),
-              Developer("Giovanni Mancini", "", [app_project]),
-              Developer("Danilo Spinelli", "", [backend_project]),
-              Developer("Emanuele De Cupis", "", [backend_project]),
-              Developer("Pasquale De Vita", "", [backend_project]),
-              Developer("Alessio Dore", "", [backend_project]),
-              Developer("Francesco Persico", "", [backend_project]),
-              Developer("Simone Infante", "", [backend_project]),
-              Developer("Daniele Manni", "", [backend_project]))
+developers = (Developer("Matteo Boschi", "", [project]),
+              Developer("Cristiano Tofani", "", [project]),
+              Developer("Fabrizio Filizola", "", [project]),
+              Developer("Simone Biffi", "", [project]),
+              Developer("Giovanni Mancini", "", [project]),
+              # Developer("Danilo Spinelli", "", [project]),
+              Developer("Emanuele De Cupis", "", [project]),
+              Developer("Pasquale De Vita", "", [project]),
+              Developer("Vito Falco", "", [project]),
+              Developer("Alessio Dore", "", [project]),
+              # Developer("Francesco Persico", "", [project]),
+              Developer("Simone Infante", "", [project]),
+              Developer("Daniele Manni", "", [project]))
 
 # mapping project / developer
 developers_for_project = {}
@@ -38,7 +37,6 @@ for d in developers:
 
 def get_pair_programming_message():
 	# make pairs using the number of week in the current year
-	weekNumber = date.today().isocalendar()[1]
 	msg = 'It would be nice if you take about 2 hours a week for <https://martinfowler.com/articles/on-pair-programming.html|pair programming>\n'
 	msg += '\n> the best programs and designs are done by pairs, because you can criticise each other, and find each others errors, and use the best ideas\n'
 	msg += '\nhere the weekly advice (`*r` means randomly picked)'
@@ -46,34 +44,22 @@ def get_pair_programming_message():
 	for p in developers_for_project.keys():
 		if len(developers_for_project[p]) > 1:
 			msg += '\n*%s* pairs\n' % p
-			devs = developers_for_project[p]
-			devs_len = len(devs)
-			index = weekNumber % devs_len
-			devs_week_list = devs[index:]
-			devs_week_list.extend(devs[0:index])
-			index = 0
-			import math
-			couples = math.ceil(float(devs_len / 2.0))
-			c = 0
-			for x in range(couples):
-				pair_1 = devs_week_list[index]
+			devs = developers_for_project[p][:]
+			random.shuffle(devs)
+			while len(devs) > 0:
+				pair_1 = devs[0]
+				del devs[0]
 				is_random = False
 				# this happens when the team is odd
-				if index + 1 >= devs_len:
-					# pick it randomly
+				if len(devs) == 0:
 					is_random = True
-					temp_devs = devs_week_list[:]
-					# remove the developer pair_1
-					del temp_devs[0]
-					# from developer list to a list of their index (all except the pair_1)
-					temp_devs = list(map(lambda i: i[0], enumerate(temp_devs)))
-					# pick an index randomly
-					pair_2_index = temp_devs[random.randint(0, len(temp_devs) - 1)]
+					# pick it randomly
+					devs_clone = list(filter(lambda d : d.name != pair_1.name,developers_for_project[p][:]))
+					random.shuffle(devs_clone)
+					pair_2 = devs_clone[0]
 				else:
-					pair_2_index = index + 1
-				pair_2 = devs_week_list[pair_2_index]
+					pair_2 = devs[0]
+					del devs[0]
 				msg += '- %s / %s%s\n' % (pair_1.name, pair_2.name, '(*r)' if is_random else '')
-				index += 2
-				c += 1
 	msg += '\n:movie_camera: remember to <https://drive.google.com/drive/folders/1D7eYdI01lCV-43GJXFR658Geba16xqTB?usp=sharing|record your programming session>\n> Share your knowledge. It is a way to achieve immortality.\n'
 	return msg
