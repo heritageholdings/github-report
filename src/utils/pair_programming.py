@@ -20,6 +20,7 @@ developers = (Developer("Matteo Boschi", "", [project]),
               Developer("Emanuele De Cupis", "", [project]),
               Developer("Pasquale De Vita", "", [project]),
               Developer("Vito Falco", "", [project]),
+              Developer("Pasquale Spica", "", [project]),
               Developer("Alessio Dore", "", [project]),
               # Developer("Francesco Persico", "", [project]),
               Developer("Simone Infante", "", [project]),
@@ -54,7 +55,7 @@ def get_pair_programming_message():
 				if len(devs) == 0:
 					is_random = True
 					# pick it randomly
-					devs_clone = list(filter(lambda d : d.name != pair_1.name,developers_for_project[p][:]))
+					devs_clone = list(filter(lambda d: d.name != pair_1.name, developers_for_project[p][:]))
 					random.shuffle(devs_clone)
 					pair_2 = devs_clone[0]
 				else:
