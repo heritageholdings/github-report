@@ -9,7 +9,7 @@ class Developer:
 	projects: list
 
 
-project = "IO - Developers"
+project = "Developers"
 # new developers should be added at the END of this list
 developers = (Developer("Matteo Boschi", "", [project]),
               Developer("Cristiano Tofani", "", [project]),
