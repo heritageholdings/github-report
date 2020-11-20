@@ -32,7 +32,8 @@ if len(project_ids_csv) <= 0:
         2420220,  # io / integration
         2169201,  # io / io.italia.it
         2161158,  # io / pagopa proxy
-        2463683,  # io / my portal
+        2463683,  # io / my portal,
+        2477137,  # io / cashback
     ]
 else:
     # use the list of projects ids provided in input
