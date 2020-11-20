@@ -164,7 +164,7 @@ if len(project_no_stories) > 0:
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": "❗️ No stories accepted for " + ", ".join(parts)
+                    "text": "❗️ No stories accepted for " + "\n".join(parts)
                 }
             }
         ])
