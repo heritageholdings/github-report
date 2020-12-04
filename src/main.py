@@ -34,7 +34,8 @@ if len(project_ids_csv) <= 0:
         2161158,  # io / pagopa proxy
         2463683,  # io / my portal
         2477137,  # io / cashback
-        2477115,  # io / pay
+        2477115,  # io / pay,
+        2477157,  # io / autenticazione e profilo
     ]
 else:
     # use the list of projects ids provided in input
