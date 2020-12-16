@@ -36,6 +36,7 @@ if len(project_ids_csv) <= 0:
         2477137,  # io / cashback
         2477115,  # io / pay,
         2477157,  # io / autenticazione e profilo
+        2476636,  # io / carta nazionale giovani
     ]
 else:
     # use the list of projects ids provided in input
