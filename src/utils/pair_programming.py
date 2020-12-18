@@ -24,6 +24,7 @@ developers = (Developer("Matteo Boschi", "", [project]),
               Developer("Alessio Dore", "", [project]),
               # Developer("Francesco Persico", "", [project]),
               Developer("Simone Infante", "", [project]),
+			  Developer("Greta Quadrati", "", [project]),
               Developer("Daniele Manni", "", [project]))
 
 # mapping project / developer
