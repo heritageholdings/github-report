@@ -18,7 +18,7 @@ projects: {len(me["projects"])}
 
 
 stories_icon = {"feature": "⭐️",
-                "bug": "🐞",
+                "bug": "🐛",
                 "chore": "⚙️",
                 "release": "🏁"}
 
