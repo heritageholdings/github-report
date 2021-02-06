@@ -9,20 +9,19 @@ class Developer:
     slack_id: str
     projects: list
 
-def read_programmers():
+def read_developers():
     l = list()
-    with open('programmers.csv') as csv_file:
+    with open('developers.csv') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
         for row in csv_reader:
             if line_count != 0:  # skip cvs head
-                # print(row[0])
                 l.append(Developer(row[0], row[1], [row[2]]))
             line_count += 1
     return tuple(l)
 
 
-developers = read_programmers()
+developers = read_developers()
 
 # mapping project / developer
 developers_for_project = {}
@@ -65,4 +64,4 @@ def get_pair_programming_message():
     msg += '\n:movie_camera: remember to <https://drive.google.com/drive/folders/1D7eYdI01lCV-43GJXFR658Geba16xqTB?usp=sharing|record your programming session>\n> Share your knowledge. It is a way to achieve immortality.\n'
     return msg
 
-#print(get_pair_programming_message())
+print(get_pair_programming_message())
