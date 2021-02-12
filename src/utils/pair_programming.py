@@ -1,6 +1,7 @@
 import csv
 from dataclasses import dataclass
-from os.path import abspath
+from io import StringIO
+from data.developers import developers_as_csv
 import random
 
 
@@ -12,14 +13,12 @@ class Developer:
 
 def read_developers():
     l = list()
-    developers_file = abspath("./data/developers.csv")
-    with open(developers_file) as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=',')
-        line_count = 0
-        for row in csv_reader:
-            if line_count != 0:  # skip cvs head
-                l.append(Developer(row[0], row[1], [row[2]]))
-            line_count += 1
+    csv_reader = csv.reader(StringIO(developers_as_csv), delimiter=',')
+    line_count = 0
+    for row in csv_reader:
+        if line_count != 0:  # skip cvs head
+            l.append(Developer(row[0], row[1], [row[2]]))
+        line_count += 1
     return tuple(l)
 
 
