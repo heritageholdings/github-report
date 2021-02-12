@@ -1,5 +1,6 @@
 import csv
 from dataclasses import dataclass
+from os.path import abspath
 import random
 
 
@@ -11,7 +12,9 @@ class Developer:
 
 def read_developers():
     l = list()
-    with open('./data/developers.csv') as csv_file:
+    developers_file = abspath("./data/developers.csv")
+    print(developers_file)
+    with open(developers_file) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
         for row in csv_reader:
