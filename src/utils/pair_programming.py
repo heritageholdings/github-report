@@ -13,7 +13,6 @@ class Developer:
 def read_developers():
     l = list()
     developers_file = abspath("./data/developers.csv")
-    print(developers_file)
     with open(developers_file) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
