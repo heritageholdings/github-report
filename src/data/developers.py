@@ -15,4 +15,5 @@ Daniele Manni,,Developers
 Lorenzo Franceschini,,Developers
 Marco Vit,,Developers
 Michael Disarò,,Developers
-Fabrizio Papi,,Developers'''
+Fabrizio Papi,,Developers
+Stefano Perazzolo,,Developers'''
