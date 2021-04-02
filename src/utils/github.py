@@ -2,7 +2,7 @@ import requests
 
 github_pr_url = 'https://api.github.com/search/issues?q=is:pr+repo:pagopa/io-app'
 github_review_url = 'https://api.github.com/repos/pagopa/io-app/pulls/%d/reviews'
-token = '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'
+token = ''
 headers = {'Authorization' : f'Bearer {token}'}
 def get_pull_requests(from_date,to_date, state = None):
 	base_url = github_pr_url + (f'+state:{state}' if state else '')
