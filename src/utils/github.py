@@ -17,7 +17,7 @@ def get_pull_requests_data(repo, from_date: datetime, to_date: datetime, state: 
 	page = 1
 	prs = []
 	while True:
-		url = base_url + f'+created:{from_date:%Y-%m-%d}..{to_date:%Y-%m-%d}&page={page}'
+		url = base_url + f'+created:>={from_date:%Y-%m-%d}&sort=created&order=asc'
 		print(f'page...{page}')
 		req = requests.get(url, headers=headers)
 		if req.status_code != 200:
@@ -25,7 +25,12 @@ def get_pull_requests_data(repo, from_date: datetime, to_date: datetime, state: 
 		data = req.json()
 		if len(data["items"]) == 0:
 			break
+		exit = False
 		for item in data["items"]:
+			created_at = datetime.datetime.strptime(item["created_at"], '%Y-%m-%dT%H:%M:%SZ')
+			if created_at > to_date:
+				exit = True
+				break
 			pr_url = item["pull_request"]["url"]
 			req_url = github_review_url % item["number"]
 			req_pr = requests.get(pr_url, headers=headers)
@@ -33,8 +38,11 @@ def get_pull_requests_data(repo, from_date: datetime, to_date: datetime, state: 
 			req_review = requests.get(req_url, headers=headers)
 			sleep(0.2)
 			if req_pr.status_code != 200 or req_pr.status_code != 200:
+				exit = True
 				break
 			prs.append(PullRequest(req_pr.json(),req_review.json()))
+		if exit:
+			break
 		page += 1
 	return prs
 
@@ -98,8 +106,8 @@ class GithubStats:
 				self.data[reviewer].pr_review_contribution += pr.contribution
 
 
-start = datetime.datetime(2020,9,1)
-end = datetime.datetime(2021,12,10)
+start = datetime.datetime(2020,9,10)
+end = datetime.datetime(2020,12,12)
 prs = get_pull_requests_data('io-app', start, end)
 stats = GithubStats(prs)
 for key,value in stats.data.items():
