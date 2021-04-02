@@ -1,8 +1,8 @@
 developers_as_csv = '''name,slack_id,projects_list
-Matteo Boschi,,Developers
-Cristiano Tofani,,Developers
-Fabrizio Filizola,,Developers
-Simone Biffi,,Developers
+Matteo Boschi,,Developers,Undermaken
+Cristiano Tofani,,Developers,CrisTofani
+Fabrizio Filizola,,Developers,fabriziofff
+Simone Biffi,,Developers,debiff
 Giovanni Mancini,,Developers
 Emanuele De Cupis,,Developers
 Pasquale De Vita,,Developers
