@@ -12,4 +12,7 @@ Alessio Dore,,Developers
 Simone Infante,,Developers
 Greta Quadrati,,Developers
 Daniele Manni,,Developers
-Lorenzo Franceschini,,Developers'''
+Lorenzo Franceschini,,Developers
+Marco Vit,,Developers
+Michael Disarò,,Developers
+Fabrizio Papi,,Developers'''
