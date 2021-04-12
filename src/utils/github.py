@@ -7,19 +7,15 @@ from time import sleep
 
 github_pr_url = 'https://api.github.com/search/issues?q=is:pr+repo:pagopa/'
 github_review_url = 'https://api.github.com/repos/pagopa/io-app/pulls/%d/reviews'
-github_token = os.getenv('GITHUB_TOKEN', "")
-print(github_token)
-headers = {'Authorization': f'Bearer {github_token}'}
 
 
-def get_pull_requests_data(repo, from_date: datetime, to_date: datetime, state: str = None):
+def get_pull_requests_data(github_token, repo, from_date: datetime, to_date: datetime, state: str = None):
+	headers = {'Authorization': f'Bearer {github_token}'}
 	base_url = github_pr_url + repo + (f'+state:{state}' if state else '')
 	page = 1
 	prs = []
 	while True:
 		url = base_url + f'+created:{from_date:%Y-%m-%d}..{to_date:%Y-%m-%d}&page={page}'
-		print(url)
-		print(f'page...{page}')
 		req = requests.get(url, headers=headers)
 		if req.status_code != 200:
 			break
@@ -29,7 +25,6 @@ def get_pull_requests_data(repo, from_date: datetime, to_date: datetime, state: 
 		exit = False
 		for item in data["items"]:
 			created_at = datetime.datetime.strptime(item["created_at"], '%Y-%m-%dT%H:%M:%SZ')
-			print(item["title"])
 			if created_at > to_date:
 				exit = True
 				break
@@ -41,7 +36,7 @@ def get_pull_requests_data(repo, from_date: datetime, to_date: datetime, state: 
 			if req_pr.status_code != 200 or req_pr.status_code != 200:
 				exit = True
 				break
-			prs.append(PullRequest(req_pr.json(),req_review.json()))
+			prs.append(PullRequest(req_pr.json(), req_review.json()))
 		if exit:
 			break
 		page += 1
@@ -86,12 +81,20 @@ class Stats:
 		self.pr_review_count = 0
 		self.pr_review_contribution = 0
 
+	@property
+	def contribution_ratio(self):
+		if self.pr_created_contribution == 0:
+			return 0
+		return self.pr_review_contribution / self.pr_created_contribution
+
 
 class GithubStats:
 
 	def __init__(self, pull_requests):
 		self.pull_requests = pull_requests
 		self.data = {}
+		self.total_pr_created = 0
+		self.total_pr_reviewed = 0
 		self.compute()
 
 	def compute(self):
@@ -105,16 +108,15 @@ class GithubStats:
 					self.data[reviewer] = Stats()
 				self.data[reviewer].pr_review_count += 1
 				self.data[reviewer].pr_review_contribution += pr.contribution
+		all_prs = self.data.values()
+		self.total_pr_created = sum(map(lambda item: item.pr_created_count, all_prs))
+		self.total_pr_reviewed = sum(map(lambda item: item.pr_review_count, all_prs))
 
 
-end = datetime.datetime.now()
-start = end - datetime.timedelta(days=7)
-prs = get_pull_requests_data('io-app', start, end)
-stats = GithubStats(prs)
-for key,value in stats.data.items():
-	print(key)
-	print(f'created: {value.pr_created_count}')
-	print(f'create contribution: {value.pr_created_contribution}')
-	print(f'reviewed: {value.pr_review_count}')
-	print(f'reviewed contribution: {value.pr_review_contribution}')
-	print('-'*10)
+def get_reviewer_emoji(contribution):
+	import math
+	if contribution == 0:
+		return '🤨'
+	if contribution >= 1:
+		return '🔝'
+	return '⭐' * math.ceil(contribution / 0.2)

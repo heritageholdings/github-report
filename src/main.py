@@ -1,6 +1,9 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import datetime
 import os
 
+from utils.github import get_pull_requests_data, GithubStats, get_reviewer_emoji
 from utils.pair_programming import get_pair_programming_message
 from utils.pivotal import Pivotal
 from utils.print import get_printable_stories, get_stories_count_recap, stories_count_per_type
@@ -12,9 +15,11 @@ pivotal_token = os.getenv('PIVOTAL_TOKEN', "")
 project_ids_csv = os.getenv('PIVOTAL_PROJECT_IDS', "")
 
 # retrieve slack token from env variables (optional)
-slack_token = None#os.getenv('SLACK_TOKEN', "")
+slack_token = None  # os.getenv('SLACK_TOKEN', "")
 # retrieve slack channel name to send reports from env variables
-slack_channel = []#os.getenv('SLACK_CHANNEL', "#dev_io")
+slack_channel = []  # os.getenv('SLACK_CHANNEL', "#dev_io")
+# retrieve github token from env variables (optional)
+github_token = os.getenv('GITHUB_TOKEN', None)
 
 if len(pivotal_token) <= 0:
     print('provide a valid Pivotal token in variable PIVOTAL_TOKEN')
@@ -62,13 +67,13 @@ project_and_stories = []
 for project_id in project_ids:
     # retrieve project stories
     project = pivotal.get_project(project_id)
-    all_stories = pivotal.get_stories(project_id, update_since, ["accepted","rejected"])
-    accepted = list(filter(lambda s: s["current_state"] == "accepted",all_stories))
-    rejected = list(filter(lambda s: s["current_state"] == "rejected",all_stories))
+    all_stories = pivotal.get_stories(project_id, update_since, ["accepted", "rejected"])
+    accepted = list(filter(lambda s: s["current_state"] == "accepted", all_stories))
+    rejected = list(filter(lambda s: s["current_state"] == "rejected", all_stories))
     project_and_stories.append((project, accepted))
-    t, shipped_stories_per_type = stories_count_per_type(accepted,shipped_stories_per_type)
+    t, shipped_stories_per_type = stories_count_per_type(accepted, shipped_stories_per_type)
     total_stories += t
-    t, rejected_stories_per_type = stories_count_per_type(rejected,rejected_stories_per_type)
+    t, rejected_stories_per_type = stories_count_per_type(rejected, rejected_stories_per_type)
     total_rejected_stories += t
 
 if total_stories == 0:
@@ -150,7 +155,7 @@ for project, stories in project_and_stories:
         slice = 10
         count = 0
         while count <= len(message_blocks):
-            send_slack_message_blocks(slack_token, slack_channel, message_blocks[count:count+slice])
+            send_slack_message_blocks(slack_token, slack_channel, message_blocks[count:count + slice])
             count += slice
     else:
         print(message_blocks)
@@ -179,13 +184,66 @@ if len(project_no_stories) > 0:
 pair_programming_message = get_pair_programming_message()
 if len(slack_channel) > 0:
     send_slack_message_blocks(slack_token, slack_channel, [
-                {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": ":desktop_computer::bulb::computer:" + pair_programming_message
-                    }
-                }
-            ])
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": ":desktop_computer::bulb::computer:" + pair_programming_message
+            }
+        }
+    ])
 
+
+
+### github stats
+if github_token:
+    developers = {"debiff": ["Simone Biffi",True],
+                  "ncannata-dev": ["Nicola Cannata",False],
+                  "Undermaken": ["Matteo Boschi",True],
+                  "fabriziofff": ["Fabrizio Filizola",True],
+                  "CrisTofani": ["Cristiano Tofani",True],
+                  "andrea-favaro": ["Andrea Favaro",False]}
+    end = datetime.datetime.now()
+    start = end - datetime.timedelta(days=7)
+    prs = get_pull_requests_data(github_token, 'io-app', start, end)
+    stats = GithubStats(prs)
+    msg = '*IO-APP* repo stats (_experimental_)\n\n'
+    msg += f':heavy_plus_sign: total pr created `{stats.total_pr_created}`\n'
+    msg += f':memo: total pr reviewed `{stats.total_pr_reviewed}`\n'
+
+    thread = send_slack_message_blocks("xoxb-842391135888-1098955295713-sfv2Vj6DNCImiY2aJjDsA6zc", "#io_status", [
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": msg
+            }
+        }
+    ])
+    for key, value in stats.data.items():
+        developer, is_reviewer = developers.get(key, (key, False))
+        msg = f'{developer}\n'
+        msg += f'{get_reviewer_emoji(value.contribution_ratio) + " " if is_reviewer else ""}contribution ratio (reviewed/created): {value.contribution_ratio:.2f} \n'
+        msg += f'PR created: {value.pr_created_count}\n'
+        msg += f'PR created contribution: {value.pr_created_contribution}\n'
+        msg += f'PR reviewed: {value.pr_review_count}\n'
+        msg += f'PR reviewed contribution: {value.pr_review_contribution}\n'
+        send_slack_message_blocks(slack_token, slack_channel, [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f'```{msg}```'
+                }
+            }
+        ], thread.data['ts'])
+    send_slack_message_blocks(slack_token, slack_channel, [
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": ":man-raising-hand::skin-tone-2::woman-raising-hand::skin-tone-2: Would you like take part of this experiment with your repo?\nReply on this thread"
+            }
+        }
+    ], thread.data['ts'])
 

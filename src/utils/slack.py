@@ -23,7 +23,7 @@ def send_slack_message(slack_token, channel, message):
         print(f"Got an error: {e.response['error']}")
 
 
-def send_slack_message_blocks(slack_token, channel, blocks):
+def send_slack_message_blocks(slack_token, channel, blocks, thread_ts = None):
     try:
         # avoid ssl certificate warning
         ssl_context = ssl.create_default_context(cafile=certifi.where())
@@ -31,7 +31,8 @@ def send_slack_message_blocks(slack_token, channel, blocks):
         rtm_client = WebClient(
             token=slack_token, ssl=ssl_context
         )
-        rtm_client.chat_postMessage(
+        return rtm_client.chat_postMessage(
+            thread_ts=thread_ts,
             channel=channel,
             blocks=blocks)
     except SlackApiError as e:
