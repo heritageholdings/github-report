@@ -15,9 +15,9 @@ pivotal_token = os.getenv('PIVOTAL_TOKEN', "")
 project_ids_csv = os.getenv('PIVOTAL_PROJECT_IDS', "")
 
 # retrieve slack token from env variables (optional)
-slack_token = None  # os.getenv('SLACK_TOKEN', "")
+slack_token = os.getenv('SLACK_TOKEN', "")
 # retrieve slack channel name to send reports from env variables
-slack_channel = []  # os.getenv('SLACK_CHANNEL', "#dev_io")
+slack_channel = os.getenv('SLACK_CHANNEL', "#dev_io")
 # retrieve github token from env variables (optional)
 github_token = os.getenv('GITHUB_TOKEN', None)
 
@@ -211,7 +211,7 @@ if github_token:
     msg += f':heavy_plus_sign: total pr created `{stats.total_pr_created}`\n'
     msg += f':memo: total pr reviewed `{stats.total_pr_reviewed}`\n'
 
-    thread = send_slack_message_blocks("xoxb-842391135888-1098955295713-sfv2Vj6DNCImiY2aJjDsA6zc", "#io_status", [
+    thread = send_slack_message_blocks(slack_token, "#io_status", [
         {
             "type": "section",
             "text": {
