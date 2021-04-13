@@ -32,7 +32,7 @@ class PullRequest:
 	@property
 	def reviewers(self):
 		'''
-		collect all reviewers name
+		collect all reviewers name that contribute to PR approving
 		note: it's used a list instead of a set to allow duplicates
 		:return:
 		'''
