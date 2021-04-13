@@ -73,11 +73,15 @@ class GithubStats:
 		indexing author stats by author name (github name)
 		:return:
 		'''
+		pr_created = 0
+		pr_reviewed = 0
 		for pr in self.pull_requests:
 			if pr.author not in self.data:
 				self.data[pr.author] = Stats()
 			self.data[pr.author].pr_created_contribution += pr.contribution
 			self.data[pr.author].pr_created_count += 1
+			pr_created += 1
+			pr_reviewed += 1 if len(pr.reviewers) > 0 else 0
 			for reviewer in pr.reviewers:
 				if reviewer not in self.data:
 					self.data[reviewer] = Stats()
@@ -85,8 +89,8 @@ class GithubStats:
 				self.data[reviewer].pr_review_contribution += pr.contribution
 		all_prs = self.data.values()
 		# compute all PR created and reviewed
-		self.total_pr_created = sum(map(lambda item: item.pr_created_count, all_prs))
-		self.total_pr_reviewed = sum(map(lambda item: item.pr_review_count, all_prs))
+		self.total_pr_created = pr_created
+		self.total_pr_reviewed = pr_reviewed
 
 
 def get_pull_requests_data(github_token, repo, from_date: datetime, to_date: datetime, state: str = None):
@@ -97,6 +101,7 @@ def get_pull_requests_data(github_token, repo, from_date: datetime, to_date: dat
 	while True:
 		# request pr created in a date span
 		url = base_url + f'+created:{from_date:%Y-%m-%d}..{to_date:%Y-%m-%d}&page={page}'
+		print(url)
 		req = requests.get(url, headers=headers)
 		if req.status_code != 200:
 			break
