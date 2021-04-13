@@ -3,6 +3,7 @@ from typing import Any
 import datetime
 import requests
 from time import sleep
+import math
 
 github_pr_url = 'https://api.github.com/search/issues?q=is:pr+repo:pagopa/'
 github_review_url = 'https://api.github.com/repos/pagopa/io-app/pulls/%d/reviews'
@@ -118,11 +119,14 @@ def get_pull_requests_data(github_token, repo, from_date: datetime, to_date: dat
 	return prs
 
 
-def get_reviewer_emoji(contribution):
-	import math
-	if contribution == 0:
-		return '🤨'
-	if contribution >= 1:
-		return '🏆'
-	return '⭐' * math.ceil(contribution / 0.2)
+def get_reviewer_description(stats: Stats):
+	if stats.pr_created_contribution == 0 and stats.pr_review_contribution > 0:
+		return '🎖️ reviewer'
+	contribution_ratio = 0 if stats.contribution_ratio <= 0.1 else stats.contribution_ratio
+	msg = f'{stats.contribution_ratio: .2f} (reviewed / created)'
+	if contribution_ratio == 0:
+		return f'🤨 {msg}'
+	if contribution_ratio >= 1:
+		return f'🏆 {msg}'
+	return '⭐' * math.ceil(contribution_ratio / 0.2) + f' {msg}'
 
