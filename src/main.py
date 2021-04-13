@@ -193,9 +193,7 @@ if len(slack_channel) > 0:
         }
     ])
 
-
-
-### github stats
+# github stats
 if github_token and len(slack_token) > 0:
     developers = {"debiff": ["Simone Biffi",True],
                   "ncannata-dev": ["Nicola Cannata",False],
@@ -222,8 +220,8 @@ if github_token and len(slack_token) > 0:
     ])
     for key, value in stats.data.items():
         developer, is_reviewer = developers.get(key, (key, False))
-        msg = f'{developer}\n'
-        msg += f'{get_reviewer_emoji(value.contribution_ratio) + " " if is_reviewer else ""}contribution ratio (reviewed/created): {value.contribution_ratio:.2f} \n'
+        header = f'{developer}\n'
+        msg = f'{get_reviewer_emoji(value.contribution_ratio) + " " if is_reviewer else ""}contribution ratio (reviewed/created): {value.contribution_ratio:.2f} \n'
         msg += f'PR created: {value.pr_created_count}\n'
         msg += f'PR created contribution: {value.pr_created_contribution}\n'
         msg += f'PR reviewed: {value.pr_review_count}\n'
@@ -233,7 +231,7 @@ if github_token and len(slack_token) > 0:
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f'```{msg}```'
+                    "text": f'{header}```{msg}```'
                 }
             }
         ], thread.data['ts'])
