@@ -35,7 +35,6 @@ for d in developers:
 
 
 def get_pair_programming_message():
-    # make pairs using the number of week in the current year
     msg = 'It would be nice if you take about 2 hours a week for <https://martinfowler.com/articles/on-pair-programming.html|pair programming>\n'
     msg += '\n> the best programs and designs are done by pairs, because you can criticise each other, and find each others errors, and use the best ideas\n'
     msg += '\nhere the weekly advice (`*r` means randomly picked)'
@@ -49,12 +48,13 @@ def get_pair_programming_message():
                 pair_1 = devs[0]
                 del devs[0]
                 is_random = False
-                # this happens when the team is odd
+                # this happens when developers are odd
                 if len(devs) == 0:
                     is_random = True
-                    # pick it randomly
+                    # create a list of devs excluding the current one
                     devs_clone = list(
-                        filter(lambda d: d.name != pair_1.name, developers_for_project[p][:]))
+                        filter(lambda dev: dev.name != pair_1.name, developers_for_project[p][:]))
+                    # pick a dev randomly
                     random.shuffle(devs_clone)
                     pair_2 = devs_clone[0]
                 else:
