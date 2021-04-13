@@ -196,7 +196,7 @@ if len(slack_channel) > 0:
 
 
 ### github stats
-if github_token:
+if github_token and len(slack_token) > 0:
     developers = {"debiff": ["Simone Biffi",True],
                   "ncannata-dev": ["Nicola Cannata",False],
                   "Undermaken": ["Matteo Boschi",True],
@@ -208,10 +208,10 @@ if github_token:
     prs = get_pull_requests_data(github_token, 'io-app', start, end)
     stats = GithubStats(prs)
     msg = '*IO-APP* repo stats (_experimental_)\n\n'
-    msg += f':heavy_plus_sign: total pr created `{stats.total_pr_created}`\n'
-    msg += f':memo: total pr reviewed `{stats.total_pr_reviewed}`\n'
+    msg += f':heavy_plus_sign: total PR created `{stats.total_pr_created}`\n'
+    msg += f':memo: total PR reviewed `{stats.total_pr_reviewed}`\n'
 
-    thread = send_slack_message_blocks(slack_token, "#io_status", [
+    thread = send_slack_message_blocks(slack_token, slack_channel, [
         {
             "type": "section",
             "text": {

@@ -5,8 +5,9 @@
 # You need to add the following pipeline variables using the Azure DevOps UI: 
 # - PIVOTAL_TOKEN:       [mandatory] a valid Pivotal token to access the stories in the projects
 # - PIVOTAL_PROJECT_IDS: [optional] csv list of project IDs (by default an hard-coded list is used)
-# - SCLACK_CHANNEL:      [optional] the Slack channel name (default: "#io_dev"; skip Slack if "")
-# - SLACK_TOKEN:         [optional] a valid Slack token (mandatory if SCLACK_CHANNEL != "")
+# - SLACK_CHANNEL:      [optional] the Slack channel name (default: "#io_dev"; skip Slack if "")
+# - SLACK_TOKEN:         [optional] a valid Slack token (mandatory if SLACK_CHANNEL != "")
+# - GITHUB_TOKEN:         [optional] a valid Github token to access Github API for repo stats feature
 #
 # If you want to run this pipeline by using scheduled triggers, you must define your scheduling
 # preferences by editing the pipeline trigger configuration using the Azure DevOps UI.
@@ -38,4 +39,5 @@ jobs:
         env:
           PIVOTAL_TOKEN: '$(PIVOTAL_TOKEN)'
           SLACK_TOKEN: '$(SLACK_TOKEN)'
+          GITHUB_TOKEN: '$(GITHUB_TOKEN)'
         displayName: 'Run python script'

@@ -2,45 +2,10 @@ from dataclasses import dataclass
 from typing import Any
 import datetime
 import requests
-import os
 from time import sleep
 
 github_pr_url = 'https://api.github.com/search/issues?q=is:pr+repo:pagopa/'
 github_review_url = 'https://api.github.com/repos/pagopa/io-app/pulls/%d/reviews'
-
-
-def get_pull_requests_data(github_token, repo, from_date: datetime, to_date: datetime, state: str = None):
-	headers = {'Authorization': f'Bearer {github_token}'}
-	base_url = github_pr_url + repo + (f'+state:{state}' if state else '')
-	page = 1
-	prs = []
-	while True:
-		url = base_url + f'+created:{from_date:%Y-%m-%d}..{to_date:%Y-%m-%d}&page={page}'
-		req = requests.get(url, headers=headers)
-		if req.status_code != 200:
-			break
-		data = req.json()
-		if len(data["items"]) == 0:
-			break
-		exit = False
-		for item in data["items"]:
-			created_at = datetime.datetime.strptime(item["created_at"], '%Y-%m-%dT%H:%M:%SZ')
-			if created_at > to_date:
-				exit = True
-				break
-			pr_url = item["pull_request"]["url"]
-			req_url = github_review_url % item["number"]
-			req_pr = requests.get(pr_url, headers=headers)
-			sleep(0.1)
-			req_review = requests.get(req_url, headers=headers)
-			if req_pr.status_code != 200 or req_pr.status_code != 200:
-				exit = True
-				break
-			prs.append(PullRequest(req_pr.json(), req_review.json()))
-		if exit:
-			break
-		page += 1
-	return prs
 
 
 @dataclass
@@ -66,6 +31,11 @@ class PullRequest:
 
 	@property
 	def reviewers(self):
+		'''
+		collect all reviewers name
+		note: it's used a list instead of a set to allow duplicates
+		:return:
+		'''
 		reviewers = []
 		if self.pr_review_data:
 			for d in self.pr_review_data:
@@ -98,6 +68,10 @@ class GithubStats:
 		self.compute()
 
 	def compute(self):
+		'''
+		indexing author stats by author name (github name)
+		:return:
+		'''
 		for pr in self.pull_requests:
 			if pr.author not in self.data:
 				self.data[pr.author] = Stats()
@@ -109,8 +83,39 @@ class GithubStats:
 				self.data[reviewer].pr_review_count += 1
 				self.data[reviewer].pr_review_contribution += pr.contribution
 		all_prs = self.data.values()
+		# compute all PR created and reviewed
 		self.total_pr_created = sum(map(lambda item: item.pr_created_count, all_prs))
 		self.total_pr_reviewed = sum(map(lambda item: item.pr_review_count, all_prs))
+
+
+def get_pull_requests_data(github_token, repo, from_date: datetime, to_date: datetime, state: str = None):
+	headers = {'Authorization': f'Bearer {github_token}'}
+	base_url = github_pr_url + repo + (f'+state:{state}' if state else '')
+	page = 1
+	prs = []
+	while True:
+		# request pr created in a date span
+		url = base_url + f'+created:{from_date:%Y-%m-%d}..{to_date:%Y-%m-%d}&page={page}'
+		req = requests.get(url, headers=headers)
+		if req.status_code != 200:
+			break
+		data = req.json()
+		# no more items
+		if len(data["items"]) == 0:
+			break
+		for item in data["items"]:
+			pr_url = item["pull_request"]["url"]
+			# get pr details
+			req_pr = requests.get(pr_url, headers=headers)
+			sleep(0.1)
+			# get pr reviewers details
+			req_url = github_review_url % item["number"]
+			req_review = requests.get(req_url, headers=headers)
+			if req_pr.status_code != 200 or req_pr.status_code != 200:
+				continue
+			prs.append(PullRequest(req_pr.json(), req_review.json()))
+		page += 1
+	return prs
 
 
 def get_reviewer_emoji(contribution):
@@ -118,5 +123,6 @@ def get_reviewer_emoji(contribution):
 	if contribution == 0:
 		return '🤨'
 	if contribution >= 1:
-		return '🔝'
+		return '🏆'
 	return '⭐' * math.ceil(contribution / 0.2)
+
