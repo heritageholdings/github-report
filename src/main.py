@@ -195,6 +195,8 @@ if len(slack_channel) > 0:
 
 # github stats
 if github_token and len(slack_token) > 0:
+    # TODO github username should be added in developers.py
+    # github-username: (name surname, is reviewer)
     developers = {"debiff": ["Simone Biffi", True],
                   "ncannata-dev": ["Nicola Cannata", False],
                   "Undermaken": ["Matteo Boschi", True],
@@ -203,54 +205,58 @@ if github_token and len(slack_token) > 0:
                   "andrea-favaro": ["Andrea Favaro", False]}
     end = datetime.datetime.now()
     start = end - datetime.timedelta(days=7)
-    prs = get_pull_requests_data(github_token, 'io-app', start, end)
-    stats = GithubStats(prs)
-    msg = '*<https://github.com/pagopa/io-app|IO-APP>* repo stats (_experimental_)\n\n'
-    msg += f':heavy_plus_sign: PR created `{stats.total_pr_created}`\n'
-    msg += f':memo: PR reviewed `{stats.total_pr_reviewed}`\n'
-
-    thread = send_slack_message_blocks(slack_token, slack_channel, [
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": msg
+    # it assumes that each item is a valid project inside pagopa org (https://github.com/pagopa)
+    stats_for_projects = ['io-app']
+    for project in stats_for_projects:
+        prs = get_pull_requests_data(github_token, project, start, end)
+        stats = GithubStats(prs)
+        msg = f'*<https://github.com/pagopa/{project}|{project.upper()}>* repo stats (_experimental_)\n\n'
+        msg += f':heavy_plus_sign: PR created `{stats.total_pr_created}`\n'
+        msg += f':memo: PR reviewed `{stats.total_pr_reviewed}`\n'
+        thread = send_slack_message_blocks(slack_token, slack_channel, [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": msg
+                }
             }
-        }
-    ])
-    # collect reviewers and sort by performance
-    reviewers = list(reversed(sorted(filter(lambda k: developers.get(k, (k, False))[1], stats.data.keys()),
-                                     key=lambda k: stats.data[k].contribution_ratio)))
-    # collect not reviewers
-    not_reviewers = list(filter(lambda k: k not in reviewers, stats.data.keys()))
-    # put not reviewer at the end
-    reviewers.extend(not_reviewers)
-    for key in reviewers:
-        value = stats.data[key]
-        developer, is_reviewer = developers.get(key, (key, False))
-        header = f'{developer}\n'
-        msg = ''
-        if is_reviewer:
-            msg += f'{get_reviewer_description(value)}\n'
-        msg += f'PR created: {value.pr_created_count}\n'
-        msg += f'PR created contribution: {value.pr_created_contribution}\n'
-        msg += f'PR reviewed: {value.pr_review_count}\n'
-        msg += f'PR reviewed contribution: {value.pr_review_contribution}\n'
+        ])
+        if stats.total_pr_reviewed == 0 and stats.total_pr_created == 0:
+            continue
+        # collect reviewers and sort by performance
+        reviewers = list(reversed(sorted(filter(lambda k: developers.get(k, (k, False))[1], stats.data.keys()),
+                                         key=lambda k: stats.data[k].contribution_ratio)))
+        # collect not reviewers
+        not_reviewers = list(filter(lambda k: k not in reviewers, stats.data.keys()))
+        # put not reviewer at the end
+        reviewers.extend(not_reviewers)
+        for key in reviewers:
+            value = stats.data[key]
+            developer, is_reviewer = developers.get(key, (key, False))
+            header = f'{developer}\n'
+            msg = ''
+            if is_reviewer:
+                msg += f'{get_reviewer_description(value)}\n'
+            msg += f'PR created: {value.pr_created_count}\n'
+            msg += f'PR created contribution: {value.pr_created_contribution}\n'
+            msg += f'PR reviewed: {value.pr_review_count}\n'
+            msg += f'PR reviewed contribution: {value.pr_review_contribution}\n'
+            send_slack_message_blocks(slack_token, slack_channel, [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f'{header}```{msg}```'
+                    }
+                }
+            ], thread.data['ts'])
         send_slack_message_blocks(slack_token, slack_channel, [
             {
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f'{header}```{msg}```'
+                    "text": ":man-raising-hand::skin-tone-2::woman-raising-hand::skin-tone-2: Would you like to take part of this experiment with your repo?\n<https://github.com/pagopa/pivotal-stories/pulls|Submit a Pull Request>"
                 }
             }
         ], thread.data['ts'])
-    send_slack_message_blocks(slack_token, slack_channel, [
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": ":man-raising-hand::skin-tone-2::woman-raising-hand::skin-tone-2: Would you like to take part of this experiment with your repo?\nReply on this thread"
-            }
-        }
-    ], thread.data['ts'])

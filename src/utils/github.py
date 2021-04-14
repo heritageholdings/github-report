@@ -101,7 +101,6 @@ def get_pull_requests_data(github_token, repo, from_date: datetime, to_date: dat
 	while True:
 		# request pr created in a date span
 		url = base_url + f'+created:{from_date:%Y-%m-%d}..{to_date:%Y-%m-%d}&page={page}'
-		print(url)
 		req = requests.get(url, headers=headers)
 		if req.status_code != 200:
 			break
