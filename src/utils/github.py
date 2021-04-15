@@ -123,7 +123,16 @@ def get_pull_requests_data(github_token, repo, from_date: datetime, to_date: dat
 	return prs
 
 
-def get_reviewer_description(stats: Stats):
+def get_reviewer_description(stats: Stats) -> str:
+	'''
+	ratio = PR reviewed contribution / PR created contribution
+	🎖️ -> only review contribution, no pr created
+	🤨 -> ratio <= 0.1
+	⭐ -> one for each 0.2 of ceil(ratio): es: 0.2-> * , 0.55 -> ***, 0.95 -> *****
+	🏆 -> ration >= 1
+	:param stats:
+	:return:
+	'''
 	if stats.pr_created_contribution == 0 and stats.pr_review_contribution > 0:
 		return '🎖️ reviewer'
 	contribution_ratio = 0 if stats.contribution_ratio <= 0.1 else stats.contribution_ratio
