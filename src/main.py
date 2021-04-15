@@ -1,6 +1,9 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import datetime
 import os
 
+from utils.github import get_pull_requests_data, GithubStats, get_reviewer_description
 from utils.pair_programming import get_pair_programming_message
 from utils.pivotal import Pivotal
 from utils.print import get_printable_stories, get_stories_count_recap, stories_count_per_type
@@ -15,6 +18,8 @@ project_ids_csv = os.getenv('PIVOTAL_PROJECT_IDS', "")
 slack_token = os.getenv('SLACK_TOKEN', "")
 # retrieve slack channel name to send reports from env variables
 slack_channel = os.getenv('SLACK_CHANNEL', "#dev_io")
+# retrieve github token from env variables (optional)
+github_token = os.getenv('GITHUB_TOKEN', None)
 
 if len(pivotal_token) <= 0:
     print('provide a valid Pivotal token in variable PIVOTAL_TOKEN')
@@ -62,13 +67,13 @@ project_and_stories = []
 for project_id in project_ids:
     # retrieve project stories
     project = pivotal.get_project(project_id)
-    all_stories = pivotal.get_stories(project_id, update_since, ["accepted","rejected"])
-    accepted = list(filter(lambda s: s["current_state"] == "accepted",all_stories))
-    rejected = list(filter(lambda s: s["current_state"] == "rejected",all_stories))
+    all_stories = pivotal.get_stories(project_id, update_since, ["accepted", "rejected"])
+    accepted = list(filter(lambda s: s["current_state"] == "accepted", all_stories))
+    rejected = list(filter(lambda s: s["current_state"] == "rejected", all_stories))
     project_and_stories.append((project, accepted))
-    t, shipped_stories_per_type = stories_count_per_type(accepted,shipped_stories_per_type)
+    t, shipped_stories_per_type = stories_count_per_type(accepted, shipped_stories_per_type)
     total_stories += t
-    t, rejected_stories_per_type = stories_count_per_type(rejected,rejected_stories_per_type)
+    t, rejected_stories_per_type = stories_count_per_type(rejected, rejected_stories_per_type)
     total_rejected_stories += t
 
 if total_stories == 0:
@@ -150,7 +155,7 @@ for project, stories in project_and_stories:
         slice = 10
         count = 0
         while count <= len(message_blocks):
-            send_slack_message_blocks(slack_token, slack_channel, message_blocks[count:count+slice])
+            send_slack_message_blocks(slack_token, slack_channel, message_blocks[count:count + slice])
             count += slice
     else:
         print(message_blocks)
@@ -179,13 +184,79 @@ if len(project_no_stories) > 0:
 pair_programming_message = get_pair_programming_message()
 if len(slack_channel) > 0:
     send_slack_message_blocks(slack_token, slack_channel, [
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": ":desktop_computer::bulb::computer:" + pair_programming_message
+            }
+        }
+    ])
+
+# github stats
+if github_token and len(slack_token) > 0:
+    # TODO github username should be added in developers.py
+    # github-username: (name surname, is reviewer)
+    developers = {"debiff": ["Simone Biffi", True],
+                  "ncannata-dev": ["Nicola Cannata", False],
+                  "Undermaken": ["Matteo Boschi", True],
+                  "fabriziofff": ["Fabrizio Filizola", True],
+                  "CrisTofani": ["Cristiano Tofani", True],
+                  "andrea-favaro": ["Andrea Favaro", False]}
+    end = datetime.datetime.now()
+    start = end - datetime.timedelta(days=7)
+    # it assumes that each item is a valid project inside pagopa org (https://github.com/pagopa)
+    stats_for_projects = ['io-app']
+    for project in stats_for_projects:
+        prs = get_pull_requests_data(github_token, project, start, end)
+        stats = GithubStats(prs)
+        msg = f'*<https://github.com/pagopa/{project}|{project.upper()}>* repo stats (_experimental_)\n\n'
+        msg += f':heavy_plus_sign: PR created `{stats.total_pr_created}`\n'
+        msg += f':memo: PR reviewed `{stats.total_pr_reviewed}`\n'
+        thread = send_slack_message_blocks(slack_token, slack_channel, [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": msg
+                }
+            }
+        ])
+        if stats.total_pr_reviewed == 0 and stats.total_pr_created == 0:
+            continue
+        # collect reviewers and sort by performance
+        reviewers = list(reversed(sorted(filter(lambda k: developers.get(k, (k, False))[1], stats.data.keys()),
+                                         key=lambda k: stats.data[k].contribution_ratio)))
+        # collect not reviewers
+        not_reviewers = list(filter(lambda k: k not in reviewers, stats.data.keys()))
+        # put not reviewer at the end
+        reviewers.extend(not_reviewers)
+        for key in reviewers:
+            value = stats.data[key]
+            developer, is_reviewer = developers.get(key, (key, False))
+            header = f'{developer}\n'
+            msg = ''
+            if is_reviewer:
+                msg += f'{get_reviewer_description(value)}\n'
+            msg += f'PR created: {value.pr_created_count}\n'
+            msg += f'PR created contribution: {value.pr_created_contribution}\n'
+            msg += f'PR reviewed: {value.pr_review_count}\n'
+            msg += f'PR reviewed contribution: {value.pr_review_contribution}\n'
+            send_slack_message_blocks(slack_token, slack_channel, [
                 {
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
-                        "text": ":desktop_computer::bulb::computer:" + pair_programming_message
+                        "text": f'{header}```{msg}```'
                     }
                 }
-            ])
-
-
+            ], thread.data['ts'])
+        send_slack_message_blocks(slack_token, slack_channel, [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": ":man-raising-hand::skin-tone-2::woman-raising-hand::skin-tone-2: Would you like to take part of this experiment with your repo?\n<https://github.com/pagopa/pivotal-stories/pulls|Submit a Pull Request>"
+                }
+            }
+        ], thread.data['ts'])
