@@ -128,7 +128,7 @@ def get_reviewer_description(stats: Stats) -> str:
 	ratio = PR reviewed contribution / PR created contribution
 	🎖️ -> only review contribution, no pr created
 	🤨 -> ratio <= 0.1
-	⭐ -> one for each 0.2 of ceil(ratio): es: 0.2-> * , 0.55 -> ***, 0.95 -> *****
+	⭐ -> one for each 0.2 of ceil(ratio): es: 0.13-> * , 0.55 -> ***, 0.95 -> *****
 	🏆 -> ration >= 1
 	:param stats:
 	:return:
