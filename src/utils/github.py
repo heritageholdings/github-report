@@ -95,14 +95,14 @@ class GithubStats:
 
 
 def get_pull_requests_data(github_token, repo, from_date: datetime, to_date: datetime, state: str = None,
-                           select_by: str = 'created'):
+                           created_or_updated: str = 'created'):
     headers = {'Authorization': f'Bearer {github_token}'}
     base_url = github_pr_url + repo + (f'+state:{state}' if state else '')
     page = 1
     prs = []
     while True:
-        # request pr created in a date span
-        url = base_url + f'+{select_by}:{from_date:%Y-%m-%d}..{to_date:%Y-%m-%d}&page={page}'
+        # request pr created | updated  in a date span
+        url = base_url + f'+{created_or_updated}:{from_date:%Y-%m-%d}..{to_date:%Y-%m-%d}&page={page}'
         req = requests.get(url, headers=headers)
         if req.status_code != 200:
             break

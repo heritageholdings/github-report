@@ -195,6 +195,8 @@ if len(slack_channel) > 0:
 
 # github stats
 if github_token and len(slack_token) > 0:
+    # TODO github username should be added in developers.py
+    # github-username: (name surname, is reviewer)
     developers = {"debiff": ["Simone Biffi", True],
                   "ncannata-dev": ["Nicola Cannata", False],
                   "Undermaken": ["Matteo Boschi", True],
