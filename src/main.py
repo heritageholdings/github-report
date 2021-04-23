@@ -195,21 +195,22 @@ if len(slack_channel) > 0:
 
 # github stats
 if github_token and len(slack_token) > 0:
-    # TODO github username should be added in developers.py
-    # github-username: (name surname, is reviewer)
     developers = {"debiff": ["Simone Biffi", True],
                   "ncannata-dev": ["Nicola Cannata", False],
                   "Undermaken": ["Matteo Boschi", True],
+                  "thisisjp": ["Jacopo Pompilii", True],
+                  "pp - ps": ["Pietro Stroia", True],
                   "fabriziofff": ["Fabrizio Filizola", True],
                   "CrisTofani": ["Cristiano Tofani", True],
-                  "andrea-favaro": ["Andrea Favaro", False]}
+                  "andrea-favaro": ["Andrea Favarò", False]}
     end = datetime.datetime.now()
     start = end - datetime.timedelta(days=7)
     # it assumes that each item is a valid project inside pagopa org (https://github.com/pagopa)
     stats_for_projects = ['io-app']
     for project in stats_for_projects:
-        prs = get_pull_requests_data(github_token, project, start, end)
-        stats = GithubStats(prs)
+        pr_creaded = get_pull_requests_data(github_token, project, start, end)
+        pr_reviews = get_pull_requests_data(github_token, project, start, end, 'closed', 'updated')
+        stats = GithubStats(pr_creaded, pr_reviews)
         msg = f'*<https://github.com/pagopa/{project}|{project.upper()}>* repo stats (_experimental_)\n\n'
         msg += f':heavy_plus_sign: PR created `{stats.total_pr_created}`\n'
         msg += f':memo: PR reviewed `{stats.total_pr_reviewed}`\n'
