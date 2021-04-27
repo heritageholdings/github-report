@@ -20,6 +20,7 @@ slack_token = os.getenv('SLACK_TOKEN', "")
 slack_channel = os.getenv('SLACK_CHANNEL', "#dev_io")
 # retrieve github token from env variables (optional)
 github_token = os.getenv('GITHUB_TOKEN', None)
+print_project_with_no_stories = False
 
 if len(pivotal_token) <= 0:
     print('provide a valid Pivotal token in variable PIVOTAL_TOKEN')
@@ -160,7 +161,7 @@ for project, stories in project_and_stories:
     else:
         print(message_blocks)
 
-if len(project_no_stories) > 0:
+if print_project_with_no_stories and len(project_no_stories) > 0:
     parts = []
     for project_id in project_no_stories:
         project = pivotal.get_project(project_id)
