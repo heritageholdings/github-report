@@ -16,4 +16,5 @@ Lorenzo Franceschini,,Developers
 Marco Vit,,Developers
 Michael Disarò,,Developers
 Fabrizio Papi,,Developers
+Ivan Diana,,Developers
 Stefano Perazzolo,,Developers'''
