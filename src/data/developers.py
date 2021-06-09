@@ -17,4 +17,5 @@ Marco Vit,,Developers
 Michael Disarò,,Developers
 Fabrizio Papi,,Developers
 Ivan Diana,,Developers
+Pietro Grandi,,Developers
 Stefano Perazzolo,,Developers'''

@@ -204,6 +204,7 @@ if github_token and len(slack_token) > 0:
                   "thisisjp": ["Jacopo Pompilii", True],
                   "pp - ps": ["Pietro Stroia", True],
                   "fabriziofff": ["Fabrizio Filizola", True],
+                  "pietro909": ["Pietro Grandi", True],
                   "CrisTofani": ["Cristiano Tofani", True],
                   "andrea-favaro": ["Andrea Favarò", False]}
     end = datetime.datetime.now()
