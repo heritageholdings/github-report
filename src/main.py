@@ -16,7 +16,7 @@ project_ids_csv = os.getenv('PIVOTAL_PROJECT_IDS', "")
 
 # retrieve slack token from env variables (optional)
 slack_token = os.getenv('SLACK_TOKEN', "")
-# slack channel name to send reports 
+# slack channel name to send reports
 slack_channel = os.getenv('SLACK_CHANNEL', "#dev_io")
 # slack channel name to send pr stats report
 pr_stats_slack_channel = os.getenv('SLACK_CHANNEL', "#io_dev_app_feed")
@@ -27,8 +27,11 @@ github_token = os.getenv('GITHUB_TOKEN', None)
 class Config():
     # if true, it will be reported also these projects for which no stories are been completed
     print_project_with_no_stories = os.getenv('REPORT_PROJECTS_NO_STORIES', False)
+    # if true, it will be evaluated pivotal projects stats
     evaluate_pivotal_projects = os.getenv('EVALUATE_PIVOTAL_PROJECTS', False)
+    # if true, it will be reported pairs for pair programming
     evaluate_pair_programming = os.getenv('EVALUATE_PAIR_PROGRAMMING', True)
+    # if true, it will be evaluated PR stats
     evaluate_pr_stats = os.getenv('EVALUATE_PR_STATS', True)
 
 if len(pivotal_token) <= 0:
