@@ -19,7 +19,7 @@ slack_token = os.getenv('SLACK_TOKEN', "")
 # slack channel name to send reports
 slack_channel = os.getenv('SLACK_CHANNEL', "#dev_io")
 # slack channel name to send pr stats report
-pr_stats_slack_channel = os.getenv('SLACK_CHANNEL', "#io_dev_app_feed")
+pr_stats_slack_channel = os.getenv('SLACK_CHANNEL_PR_STATS', "#io_dev_app_feed")
 # retrieve github token from env variables (optional)
 github_token = os.getenv('GITHUB_TOKEN', None)
 
