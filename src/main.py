@@ -16,9 +16,9 @@ project_ids_csv = os.getenv('PIVOTAL_PROJECT_IDS', "")
 
 # retrieve slack token from env variables (optional)
 slack_token = os.getenv('SLACK_TOKEN', "")
-# retrieve slack channel name to send reports from env variables
+# slack channel name to send reports 
 slack_channel = os.getenv('SLACK_CHANNEL', "#dev_io")
-# retrieve slack channel name to send reports from env variables
+# slack channel name to send pr stats report
 pr_stats_slack_channel = os.getenv('SLACK_CHANNEL', "#io_dev_app_feed")
 # retrieve github token from env variables (optional)
 github_token = os.getenv('GITHUB_TOKEN', None)
