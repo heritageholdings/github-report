@@ -213,14 +213,12 @@ if Config.evaluate_pr_stats:
         # TODO github username should be added in developers.py
         # github-username: (name surname, is reviewer)
         developers = {"debiff": ["Simone Biffi", True],
-                      "ncannata-dev": ["Nicola Cannata", False],
                       "Undermaken": ["Matteo Boschi", True],
                       "thisisjp": ["Jacopo Pompilii", True],
                       "pp - ps": ["Pietro Stroia", True],
                       "fabriziofff": ["Fabrizio Filizola", True],
                       "pietro909": ["Pietro Grandi", True],
-                      "CrisTofani": ["Cristiano Tofani", True],
-                      "andrea-favaro": ["Andrea Favarò", False]}
+                      "CrisTofani": ["Cristiano Tofani", True]}
         end = datetime.datetime.now()
         start = end - datetime.timedelta(days=7)
         # it assumes that each item is a valid project inside pagopa org (https://github.com/pagopa)
