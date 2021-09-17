@@ -18,4 +18,5 @@ Michael Disarò,,Developers
 Fabrizio Papi,,Developers
 Ivan Diana,,Developers
 Pietro Grandi,,Developers
-Stefano Perazzolo,,Developers'''
+Stefano Perazzolo,,Developers
+Jacopo Carlini,,Developers'''
