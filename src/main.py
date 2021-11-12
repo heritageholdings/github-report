@@ -30,7 +30,7 @@ class Config():
     # if true, it will be evaluated pivotal projects stats
     evaluate_pivotal_projects = os.getenv('EVALUATE_PIVOTAL_PROJECTS', False)
     # if true, it will be reported pairs for pair programming
-    evaluate_pair_programming = os.getenv('EVALUATE_PAIR_PROGRAMMING', True)
+    evaluate_pair_programming = os.getenv('EVALUATE_PAIR_PROGRAMMING', False)
     # if true, it will be evaluated PR stats
     evaluate_pr_stats = os.getenv('EVALUATE_PR_STATS', True)
 
