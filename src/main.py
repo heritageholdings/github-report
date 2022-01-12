@@ -216,6 +216,7 @@ if Config.evaluate_pr_stats:
                       "Undermaken": ["Matteo Boschi", True],
                       "thisisjp": ["Jacopo Pompilii", True],
                       "pp - ps": ["Pietro Stroia", True],
+					  "dgopsq": ["Diego Pasquali", True],
                       "fabriziofff": ["Fabrizio Filizola", True],
                       "pietro909": ["Pietro Grandi", True],
                       "CrisTofani": ["Cristiano Tofani", True]}
