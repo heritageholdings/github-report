@@ -216,18 +216,19 @@ if Config.evaluate_pr_stats:
                       "Undermaken": ["Matteo Boschi", True],
                       "thisisjp": ["Jacopo Pompilii", True],
                       "pp - ps": ["Pietro Stroia", True],
+					  "emiliopavia": ["Emilio Pavia", True],
 					  "dgopsq": ["Diego Pasquali", True],
                       "fabriziofff": ["Fabrizio Filizola", True],
                       "pietro909": ["Pietro Grandi", True],
                       "CrisTofani": ["Cristiano Tofani", True]}
         end = datetime.datetime.now()
-        start = end - datetime.timedelta(days=7)
+        start = end - datetime.timedelta(days=3)
         # it assumes that each item is a valid project inside pagopa org (https://github.com/pagopa)
-        stats_for_projects = ['io-app']
+        stats_for_projects = ['io-app','io-services-metadata']
         for project in stats_for_projects:
-            pr_creaded = get_pull_requests_data(github_token, project, start, end)
-            pr_reviews = get_pull_requests_data(github_token, project, start, end, 'closed', 'updated')
-            stats = GithubStats(pr_creaded, pr_reviews)
+            pr_created = get_pull_requests_data(github_token, project, start, end)
+            pr_reviews = get_pull_requests_data(github_token, project, start, end, 'closed', 'merged')
+            stats = GithubStats(pr_created, pr_reviews)
             msg = f'*<https://github.com/pagopa/{project}|{project.upper()}>* repo stats (_experimental_)\n\n'
             msg += f':heavy_plus_sign: PR created `{stats.total_pr_created}`\n'
             msg += f':memo: PR reviewed `{stats.total_pr_reviewed}`\n'
