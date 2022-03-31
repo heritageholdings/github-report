@@ -228,10 +228,12 @@ if Config.evaluate_pr_stats:
 		# it assumes that each item is a valid project inside pagopa org (https://github.com/pagopa)
 		stats_for_projects = ['io-app', 'io-services-metadata', 'io-dev-api-server']
 		for project in stats_for_projects:
+			repo_stats = " | ".join([f'{v} {k}' for k,v in GithubStats.get_repo_stats(project).items()])
 			pr_created = get_pull_requests_data(github_token, project, start, end)
 			pr_reviews = get_pull_requests_data(github_token, project, start, end, 'closed', 'merged')
 			stats = GithubStats(pr_created, pr_reviews)
-			msg = f'*<https://github.com/pagopa/{project}|{project.upper()}>* repo stats (_experimental_)\n\n'
+			msg = f'*<https://github.com/pagopa/{project}|{project.upper()}>* repo stats\n\n'
+			msg += f':thermometer: status `{repo_stats}`\n'
 			msg += f':heavy_plus_sign: PR created `{stats.total_pr_created}`\n'
 			msg += f':memo: PR reviewed `{stats.total_pr_reviewed}`\n'
 			thread = send_slack_message_blocks(slack_token, pr_stats_slack_channel, [

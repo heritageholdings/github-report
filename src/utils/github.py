@@ -1,12 +1,14 @@
 from dataclasses import dataclass
+from functools import reduce
 from typing import Any
 import datetime
 import requests
 from time import sleep
 import math
 
-github_pr_url = 'https://api.github.com/search/issues?q=is:pr+repo:pagopa/'
+github_issue_url = 'https://api.github.com/search/issues?q=is:pr+repo:pagopa/'
 github_review_url = 'https://api.github.com/repos/pagopa/%s/pulls/%d/reviews'
+github_pr_url = 'https://api.github.com/repos/pagopa/%s/pulls'
 
 
 @dataclass
@@ -40,6 +42,7 @@ class PullRequest:
         reviewers = []
         if self.pr_review_data:
             for d in self.pr_review_data:
+                # perhaps we should use a dedicated API https://docs.github.com/en/rest/reference/pulls#check-if-a-pull-request-has-been-merged
                 if d["state"] == "APPROVED":
                     reviewers.append(d["user"]["login"])
         return reviewers
@@ -93,11 +96,27 @@ class GithubStats:
         self.total_pr_created = pr_created
         self.total_pr_reviewed = pr_reviewed
 
+    @staticmethod
+    def get_repo_stats(repo):
+        url = github_pr_url % repo
+        req = requests.get(url)
+        if req.status_code != 200:
+            return None
+        data = req.json()
+        # dict where the key is the state and the value is the counter
+        def reduce_func(acc,curr):
+            state = curr['state']
+            if state not in acc:
+                acc[state] = 0
+            acc[state] += 1
+            return acc
+        state_counter = reduce(reduce_func,data,{})
+        return state_counter
 
 def get_pull_requests_data(github_token, repo, from_date: datetime, to_date: datetime, state: str = None,
                            created_or_updated: str = 'created'):
     headers = {'Authorization': f'Bearer {github_token}'}
-    base_url = github_pr_url + repo + (f'+state:{state}' if state else '')
+    base_url = github_issue_url + repo + (f'+state:{state}' if state else '')
     page = 1
     prs = []
     while True:
