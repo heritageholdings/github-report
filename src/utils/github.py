@@ -101,11 +101,14 @@ class GithubStats:
         url = github_pr_url % repo
         req = requests.get(url)
         if req.status_code != 200:
-            return None
+            return {}
         data = req.json()
         # dict where the key is the state and the value is the counter
         def reduce_func(acc,curr):
-            state = curr['state']
+            if curr['draft']:
+                state = 'draft'
+            else:
+                state = curr['state']
             if state not in acc:
                 acc[state] = 0
             acc[state] += 1
