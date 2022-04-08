@@ -224,7 +224,7 @@ if Config.evaluate_pr_stats:
 					  "pietro909": ["Pietro Grandi", True],
 					  "CrisTofani": ["Cristiano Tofani", True]}
 		end = datetime.datetime.now()
-		start = end - datetime.timedelta(days=3)
+		start = end - datetime.timedelta(days=7)
 		# it assumes that each item is a valid project inside pagopa org (https://github.com/pagopa)
 		stats_for_projects = ['io-app', 'io-services-metadata', 'io-dev-api-server']
 		for project in stats_for_projects:
