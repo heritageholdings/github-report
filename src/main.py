@@ -233,7 +233,7 @@ if Config.evaluate_pr_stats:
             pr_reviews = get_pull_requests_data(github_token, project, start, end, 'closed', 'merged')
             stats = GithubStats(pr_created, pr_reviews)
             msg = f'*<https://github.com/pagopa/{project}|{project.upper()}>* repo stats\n\n'
-            msg += f':thermometer: status `{repo_stats}`\n'
+            msg += f':thermometer: status `{repo_stats if len(repo_stats) else "all clear!"}`\n'
             msg += f':heavy_plus_sign: PR created `{stats.total_pr_created}`\n'
             msg += f':memo: PR reviewed `{stats.total_pr_reviewed}`\n'
             thread = send_slack_message_blocks(slack_token, pr_stats_slack_channel, [
