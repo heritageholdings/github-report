@@ -78,3 +78,5 @@ fabric.properties
 .idea/inspectionProfiles/*.xml
 
 .vscode
+Project.xml
+codeStyleConfig.xml

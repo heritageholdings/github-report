@@ -5,10 +5,11 @@ import datetime
 import requests
 from time import sleep
 import math
-
-github_issue_url = 'https://api.github.com/search/issues?q=is:pr+repo:pagopa/'
-github_review_url = 'https://api.github.com/repos/pagopa/%s/pulls/%d/reviews'
-github_pr_url = 'https://api.github.com/repos/pagopa/%s/pulls'
+import os
+github_company_name = os.getenv('GITHUB_COMPANY_NAME', 'heritageholdings')
+github_issue_url = f'https://api.github.com/search/issues?q=is:pr+repo:{github_company_name}/'
+github_review_url = f'https://api.github.com/repos/{github_company_name}/%s/pulls/%d/reviews'
+github_pr_url = f'https://api.github.com/repos/{github_company_name}/%s/pulls'
 
 
 @dataclass
@@ -97,9 +98,10 @@ class GithubStats:
         self.total_pr_reviewed = pr_reviewed
 
     @staticmethod
-    def get_repo_stats(repo):
+    def get_repo_stats(repo, github_token):
+        headers = {'Authorization': f'Bearer {github_token}'}
         url = github_pr_url % repo
-        req = requests.get(url)
+        req = requests.get(url,headers=headers)
         if req.status_code != 200:
             return {}
         data = req.json()
