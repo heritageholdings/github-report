@@ -6,6 +6,7 @@ import requests
 from time import sleep
 import math
 import os
+
 github_company_name = os.getenv('GITHUB_COMPANY_NAME', 'heritageholdings')
 github_issue_url = f'https://api.github.com/search/issues?q=is:pr+repo:{github_company_name}/'
 github_review_url = f'https://api.github.com/repos/{github_company_name}/%s/pulls/%d/reviews'
@@ -101,12 +102,13 @@ class GithubStats:
     def get_repo_stats(repo, github_token):
         headers = {'Authorization': f'Bearer {github_token}'}
         url = github_pr_url % repo
-        req = requests.get(url,headers=headers)
+        req = requests.get(url, headers=headers)
         if req.status_code != 200:
             return {}
         data = req.json()
+
         # dict where the key is the state and the value is the counter
-        def reduce_func(acc,curr):
+        def reduce_func(acc, curr):
             if curr['draft']:
                 state = 'draft'
             else:
@@ -115,8 +117,10 @@ class GithubStats:
                 acc[state] = 0
             acc[state] += 1
             return acc
-        state_counter = reduce(reduce_func,data,{})
+
+        state_counter = reduce(reduce_func, data, {})
         return state_counter
+
 
 def get_pull_requests_data(github_token, repo, from_date: datetime, to_date: datetime, state: str = None,
                            created_or_updated: str = 'created'):

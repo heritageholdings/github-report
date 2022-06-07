@@ -24,13 +24,9 @@ def send_slack_message(slack_token, channel, message):
 
 
 def send_slack_message_blocks(slack_token, channel, blocks, thread_ts=None):
-    for b in blocks:
-        print(b)
-    return
     try:
         # avoid ssl certificate warning
         ssl_context = ssl.create_default_context(cafile=certifi.where())
-        slack_token = slack_token
         rtm_client = WebClient(
             token=slack_token, ssl=ssl_context
         )
