@@ -146,7 +146,7 @@ def get_pull_requests_data(github_token, repo, from_date: datetime, to_date: dat
             # get pr reviewers details
             req_url = github_review_url % (repo, item["number"])
             req_review = requests.get(req_url, headers=headers)
-            if req_pr.status_code != 200 or req_pr.status_code != 200:
+            if req_pr.status_code != 200 or req_review.status_code != 200:
                 continue
             prs.append(PullRequest(req_pr.json(), req_review.json()))
         page += 1
