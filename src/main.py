@@ -18,7 +18,7 @@ assert github_token is not None
 
 end = datetime.datetime.now()
 start = end - datetime.timedelta(days=days_span)
-# it assumes that each item is a valid project inside heritageholdings org (https://github.com/heritageholdings)
+# it assumes that each item is a valid project inside {github_company_name} org
 for github_project in github_company_repositories:
     repo_stats = " | ".join([f'{v} {k}' for k, v in GithubStats.get_repo_stats(github_project, github_token).items()])
     pr_created = get_pull_requests_data(github_token, github_project, start, end)
@@ -26,11 +26,11 @@ for github_project in github_company_repositories:
     stats = GithubStats(pr_created, pr_reviews)
     msg = f'These are the contributions included in *<https://github.com/{github_company_name}/{github_project}|{github_project.upper()}>* from *{start.day:02}/{start.month:02}* to *{end.day:02}/{end.month:02}*\n'
     if len(pr_reviews) > 0:
-        msg = "*Contributions included in the next build*\n"
+        msg += "*Contributions included during the period*\n"
         msg += '\n'.join(
             map(lambda pr: f'- <{pr.pr_data["html_url"]}|{pr.pr_data["title"].replace("`", "")}>', pr_reviews))
         msg += "\n"
-    msg += "*PR stats*\n"
+    msg += "*Pull requests stats*\n"
     msg += f'created: `{stats.total_pr_created}`\n'
     msg += f'reviewed: `{stats.total_pr_reviewed}`\n'
     msg += f'current: `{repo_stats if len(repo_stats) else "all clear!"}`\n'
@@ -48,6 +48,16 @@ for github_project in github_company_repositories:
     # sort reviewer by contribution
     reviewers = sorted(stats.data.keys(), key=lambda x: stats.data[x].pr_created_contribution + stats.data[x].pr_review_contribution,
                             reverse=True)
+    if len(reviewers) > 0:
+        send_slack_message_blocks(slack_token, slack_channel, [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": '*Contributors stats*\n'
+                }
+            }
+        ], thread.data['ts'])
     for developer in reviewers:
         value = stats.data[developer]
         header = f'{developer}\n'
