@@ -23,10 +23,11 @@ for github_project in github_company_repositories:
     repo_stats = " | ".join([f'{v} {k}' for k, v in GithubStats.get_repo_stats(github_project, github_token).items()])
     pr_created = get_pull_requests_data(github_token, github_project, start, end)
     pr_reviews = get_pull_requests_data(github_token, github_project, start, end, 'closed', 'merged')
-    pr_reviews_details = f'These are the contributions included in *<https://github.com/{github_company_name}/{github_project}|{github_project.upper()}>* in the last {days_span} days\n'
-    pr_reviews_details += '\n'.join(
-        map(lambda pr: f'- <{pr.pr_data["html_url"]}|{pr.pr_data["title"].replace("`", "")}>', pr_reviews))
-    send_slack_message(slack_token, slack_channel, pr_reviews_details)
+    if len(pr_reviews) > 0:
+        pr_reviews_details = f'These are the contributions included in *<https://github.com/{github_company_name}/{github_project}|{github_project.upper()}>* in the last {days_span} days\n'
+        pr_reviews_details += '\n'.join(
+            map(lambda pr: f'- <{pr.pr_data["html_url"]}|{pr.pr_data["title"].replace("`", "")}>', pr_reviews))
+        send_slack_message(slack_token, slack_channel, pr_reviews_details)
     stats = GithubStats(pr_created, pr_reviews)
     msg = f'*<https://github.com/{github_company_name}/{github_project}|{github_project.upper()}>* PR stats from *{start.day:02}/{start.month:02}* to *{end.day:02}/{end.month:02}*\n\n'
     msg += f'created: `{stats.total_pr_created}`\n'
