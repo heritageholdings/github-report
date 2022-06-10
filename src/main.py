@@ -60,7 +60,7 @@ for github_project in github_company_repositories:
         ], thread.data['ts'])
     for developer in reviewers:
         value = stats.data[developer]
-        header = f'{developer}\n'
+        header = f'`{developer}`\n'
         msg = ''
         msg += f'PR created: {value.pr_created_count}\n'
         msg += f'PR created contribution: {value.pr_created_contribution}\n'
