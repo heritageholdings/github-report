@@ -9,14 +9,14 @@ Make sure that all dependencies in [requirements.txt](requirements.txt) have bee
 ### env variables
 To work properly this tool needs some configuration data
 
-| key                   | description                                                                                                                                                   |
-|-----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `GH_TOKEN`             | required to use the GitHub API ([more info](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)) |
-| `GH_COMPANY_NAME` | the name of the company where repositories are (i.e. `heritageholdings`)                                                                                      |
-|  `GH_COMPANY_REPOSITORIES`  | an array of strings that contains the name of the repositories for which the report will be produced (i.e. `['iconic']`)                            |
-| `SLACK_TOKEN`         | required to send the report to a Slack dedicated channel ([more info](https://api.slack.com/apps))                                                            |
-| `SLACK_CHANNEL`       | the name of the Slack channel where the app that holds the previos token is installed                                                                         |
-| `DAYS_SPAN`           | the number of days from when tool should collect the data (e.g if you want a report about the last week, set it to `7`)                                       |
+| key                   | description                                                                                                                                                     |
+|-----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `GH_TOKEN`             | required to use the GitHub API ([more info](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token))   |
+| `GH_COMPANY_NAME` | the name of the company where repositories are (i.e. `heritageholdings`)                                                                                        |
+|  `GH_COMPANY_REPOSITORIES`  | a list of strings seperated by comma that contains the name of the repositories for which the report will be produced (i.e. `iconic, repository2, repository3`) |
+| `SLACK_TOKEN`         | required to send the report to a Slack dedicated channel ([more info](https://api.slack.com/apps))                                                              |
+| `SLACK_CHANNEL`       | the name of the Slack channel where the app that holds the previos token is installed                                                                           |
+| `DAYS_SPAN`           | the number of days from when tool should collect the data (e.g if you want a report about the last week, set it to `7`)                                         |
 
 ### scheduled feed
 The bot starts automatically collecting the data every Friday at 13.55 CET

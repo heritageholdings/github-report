@@ -11,7 +11,8 @@ slack_token = os.getenv('SLACK_TOKEN')
 days_span = os.getenv('DAYS_SPAN', 7)
 slack_channel = os.getenv('SLACK_CHANNEL', 'test_feed')
 github_company_name = os.getenv('GH_COMPANY_NAME', 'heritageholdings')
-github_company_repositories = os.getenv('GH_COMPANY_REPOSITORIES', ['iconic'])
+github_company_repositories = list(
+    map(lambda item: item.strip(), os.getenv('GH_COMPANY_REPOSITORIES', 'iconic').split(",")))
 assert slack_token is not None
 assert github_token is not None
 
@@ -45,8 +46,9 @@ for github_project in github_company_repositories:
     if (stats.total_pr_reviewed + stats.total_pr_created) == 0:
         continue
     # sort reviewer by contribution
-    reviewers = sorted(stats.data.keys(), key=lambda x: stats.data[x].pr_created_contribution + stats.data[x].pr_review_contribution,
-                            reverse=True)
+    reviewers = sorted(stats.data.keys(),
+                       key=lambda x: stats.data[x].pr_created_contribution + stats.data[x].pr_review_contribution,
+                       reverse=True)
     if len(reviewers) > 0:
         send_slack_message_blocks(slack_token, slack_channel, [
             {
