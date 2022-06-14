@@ -7,7 +7,7 @@ from time import sleep
 import math
 import os
 
-github_company_name = os.getenv('GITHUB_COMPANY_NAME', 'heritageholdings')
+github_company_name = os.getenv('GH_COMPANY_NAME', 'heritageholdings')
 github_issue_url = f'https://api.github.com/search/issues?q=is:pr+repo:{github_company_name}/'
 github_review_url = f'https://api.github.com/repos/{github_company_name}/%s/pulls/%d/reviews'
 github_pr_url = f'https://api.github.com/repos/{github_company_name}/%s/pulls'
