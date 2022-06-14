@@ -102,14 +102,11 @@ class GithubStats:
     def get_repo_stats(repo, github_token):
         headers = {'Authorization': f'Bearer {github_token}'}
         url = github_pr_url % repo
-        try:
-            req = requests.get(url, headers=headers)
-        except:
-            return {"draft": 666}
+        req = requests.get(url, headers=headers)
         if req.status_code != 200:
-            return {"draft": req.status_code}
+            return {}
         data = req.json()
-        return {"draft": 123}
+
         # dict where the key is the state and the value is the counter
         def reduce_func(acc, curr):
             if curr['draft']:
