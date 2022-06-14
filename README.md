@@ -17,3 +17,6 @@ To work properly this tool needs some configuration data
 | `SLACK_CHANNEL`       | the name of the Slack channel where the app that holds the previos token is installed                                                                        |
 | `DAYS_SPAN`           | the number of days from when tool should collect the data (e.g if you want a report about the last week, set it to `7`)                                   |
 
+### scheduled feed
+The bot starts automatically collecting the data every Friday at 13.55 CET
+[More info](/.github/workflows/scheduled_report.yml)

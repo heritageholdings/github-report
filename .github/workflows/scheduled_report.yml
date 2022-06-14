@@ -3,11 +3,8 @@
 
 name: Heritage GitHub feed
 on:
-  push:
-    branches: ["add-github-scheduled-action"]
-#on:
-#  schedule:
-#    - cron: '55 13 * * 5'
+  schedule:
+    - cron: '55 13 * * 5'
 
 permissions:
   contents: read
