@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   build:
-    environment: io-report
+    environment: scheduled_report
     runs-on: ubuntu-latest
 
     steps:
@@ -35,7 +35,7 @@ jobs:
       run: |
           sudo locale-gen ${{ env.LANG }}
           sudo update-locale ${{ env.LANG }}
-    - name: Run IO-Report
+    - name: Run GitHub feed
       env:
         GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         slack_token: '${{ secrets.slack_token }}'
