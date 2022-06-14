@@ -3,16 +3,15 @@
 import datetime
 import os
 
-from utils.github import get_pull_requests_data, GithubStats, get_reviewer_description
-from utils.slack import send_slack_message_blocks, send_slack_message
+from utils.github import get_pull_requests_data, GithubStats
+from utils.slack import send_slack_message_blocks
 
-github_token = os.getenv('GITHUB_TOKEN')
+github_token = os.getenv('GH_TOKEN')
 slack_token = os.getenv('SLACK_TOKEN')
 days_span = os.getenv('DAYS_SPAN', 7)
 slack_channel = os.getenv('SLACK_CHANNEL', 'test_feed')
-github_company_name = os.getenv('GITHUB_COMPANY_NAME', 'heritageholdings')
-github_company_repositories = os.getenv('GITHUB_COMPANY_REPOSITORIES', ['iconic'])
-assert github_company_name is not None
+github_company_name = os.getenv('GH_COMPANY_NAME', 'heritageholdings')
+github_company_repositories = os.getenv('GH_COMPANY_REPOSITORIES', ['iconic'])
 assert slack_token is not None
 assert github_token is not None
 
