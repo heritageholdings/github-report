@@ -38,6 +38,6 @@ jobs:
     - name: Run GitHub feed
       env:
         GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-        slack_token: '${{ secrets.slack_token }}'
+        slack_token: '${{ secrets.SLACK_TOKEN }}'
       run: |
         python src/main.py
