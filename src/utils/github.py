@@ -102,7 +102,10 @@ class GithubStats:
     def get_repo_stats(repo, github_token):
         headers = {'Authorization': f'Bearer {github_token}'}
         url = github_pr_url % repo
-        req = requests.get(url, headers=headers)
+        try:
+            req = requests.get(url, headers=headers)
+        except:
+            return {"draft": 666}
         if req.status_code != 200:
             return {"draft": req.status_code}
         data = req.json()
