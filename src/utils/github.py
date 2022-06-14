@@ -102,12 +102,9 @@ class GithubStats:
     def get_repo_stats(repo, github_token):
         headers = {'Authorization': f'Bearer {github_token}'}
         url = github_pr_url % repo
-        print(url)
-        print("token endswith", github_token[-5])
         req = requests.get(url, headers=headers)
         if req.status_code != 200:
-            print(f"status code {req.status_code} - {url}")
-            return {}
+            return {"draft": req.status_code}
         data = req.json()
 
         # dict where the key is the state and the value is the counter
