@@ -6,7 +6,7 @@ import os
 from utils.github import get_pull_requests_data, GithubStats
 from utils.slack import send_slack_message_blocks
 
-github_token = os.getenv('GH_API_TOKEN')
+github_token = os.getenv('GH_TOKEN')
 slack_token = os.getenv('SLACK_TOKEN')
 days_span = os.getenv('DAYS_SPAN', 7)
 slack_channel = os.getenv('SLACK_CHANNEL', 'test_feed')
