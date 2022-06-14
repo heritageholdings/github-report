@@ -104,6 +104,7 @@ class GithubStats:
         url = github_pr_url % repo
         req = requests.get(url, headers=headers)
         if req.status_code != 200:
+            print(f"status code {req.status_code} - {url}")
             return {}
         data = req.json()
 
