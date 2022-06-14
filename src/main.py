@@ -12,7 +12,6 @@ days_span = os.getenv('DAYS_SPAN', 7)
 slack_channel = os.getenv('SLACK_CHANNEL', 'test_feed')
 github_company_name = os.getenv('GITHUB_COMPANY_NAME', 'heritageholdings')
 github_company_repositories = os.getenv('GITHUB_COMPANY_REPOSITORIES', ['iconic'])
-assert github_company_name is not None
 assert slack_token is not None
 assert github_token is not None
 
