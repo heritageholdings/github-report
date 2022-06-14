@@ -106,7 +106,7 @@ class GithubStats:
         if req.status_code != 200:
             return {"draft": req.status_code}
         data = req.json()
-
+        return {"draft": 123}
         # dict where the key is the state and the value is the counter
         def reduce_func(acc, curr):
             if curr['draft']:
