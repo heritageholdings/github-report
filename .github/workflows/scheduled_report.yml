@@ -17,7 +17,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       with:
-        ref: add-github-scheduled-action
+        ref: main
     - name: Set up Python 3.10
       uses: actions/setup-python@v3
       with:
@@ -36,5 +36,6 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
         SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+        SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
       run: |
         python src/main.py
