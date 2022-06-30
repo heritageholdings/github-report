@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 from functools import reduce
-from typing import Any
+from typing import Any, List, Set
 import datetime
 import requests
 from time import sleep
 import math
-import os
 
-github_company_name = os.getenv('GH_COMPANY_NAME', 'heritageholdings')
+from utils.env import github_company_name, github_token
+
 github_issue_url = f'https://api.github.com/search/issues?q=is:pr+repo:{github_company_name}/'
 github_review_url = f'https://api.github.com/repos/{github_company_name}/%s/pulls/%d/reviews'
 github_pr_url = f'https://api.github.com/repos/{github_company_name}/%s/pulls'
@@ -54,7 +54,7 @@ class Stats:
     def __init__(self):
         self.pr_created_count = 0
         self.pr_created_contribution = 0
-        self.pr_review_count = 0
+        self.pr_reviewed: Set[int] = set()
         self.pr_review_contribution = 0
 
     @property
@@ -66,7 +66,7 @@ class Stats:
 
 class GithubStats:
 
-    def __init__(self, pull_requests_created, pull_requests_reviewed):
+    def __init__(self, pull_requests_created: List[PullRequest], pull_requests_reviewed: List[PullRequest]):
         self.pull_requests_created = pull_requests_created
         self.pull_requests_reviewed = pull_requests_reviewed
         self.data = {}
@@ -92,19 +92,19 @@ class GithubStats:
             for reviewer in pr.reviewers:
                 if reviewer not in self.data:
                     self.data[reviewer] = Stats()
-                self.data[reviewer].pr_review_count += 1
+                self.data[reviewer].pr_reviewed.add(pr.pr_data['number'])
                 self.data[reviewer].pr_review_contribution += pr.contribution
         # compute all PR created and reviewed
         self.total_pr_created = pr_created
         self.total_pr_reviewed = pr_reviewed
 
     @staticmethod
-    def get_repo_stats(repo, github_token):
-        headers = {'Authorization': f'Bearer {github_token}'}
+    def get_repo_stats(repo):
+        headers = {'Authorization': f'Bearer {github_token}'} if github_token else {}
         url = github_pr_url % repo
         req = requests.get(url, headers=headers)
         if req.status_code != 200:
-            return {}
+            raise Exception(f"status code unexpected {req.status_code} for request {url}. Perhaps do you need to use a Github token?")
         data = req.json()
 
         # dict where the key is the state and the value is the counter
@@ -122,9 +122,9 @@ class GithubStats:
         return state_counter
 
 
-def get_pull_requests_data(github_token, repo, from_date: datetime, to_date: datetime, state: str = None,
-                           created_or_updated: str = 'created'):
-    headers = {'Authorization': f'Bearer {github_token}'}
+def get_pull_requests_data(repo, from_date: datetime, to_date: datetime, state: str = None,
+                           created_or_updated: str = 'created') -> List[PullRequest]:
+    headers = {'Authorization': f'Bearer {github_token}'} if github_token else {}
     base_url = github_issue_url + repo + (f'+state:{state}' if state else '')
     page = 1
     prs = []
@@ -133,7 +133,9 @@ def get_pull_requests_data(github_token, repo, from_date: datetime, to_date: dat
         url = base_url + f'+{created_or_updated}:{from_date:%Y-%m-%d}..{to_date:%Y-%m-%d}&page={page}'
         req = requests.get(url, headers=headers)
         if req.status_code != 200:
-            break
+            raise Exception(
+                f"status code unexpected {req.status_code} for request {url}")
+
         data = req.json()
         # no more items
         if len(data["items"]) == 0:
@@ -147,7 +149,8 @@ def get_pull_requests_data(github_token, repo, from_date: datetime, to_date: dat
             req_url = github_review_url % (repo, item["number"])
             req_review = requests.get(req_url, headers=headers)
             if req_pr.status_code != 200 or req_review.status_code != 200:
-                continue
+                raise Exception(
+                    f"status code unexpected {req.status_code} for request {url}")
             prs.append(PullRequest(req_pr.json(), req_review.json()))
         page += 1
     return prs
