@@ -17,12 +17,23 @@ for github_project in github_company_repositories:
     pr_created = get_pull_requests_data(github_project, start, end)
     pr_reviews = get_pull_requests_data(github_project, start, end, 'closed', 'merged')
     stats = GithubStats(pr_created, pr_reviews)
-    msg = f'These are the contributions included in *<https://github.com/{github_company_name}/{github_project}|{github_project.upper()}>* from *{start.day:02}/{start.month:02}* to *{end.day:02}/{end.month:02}*\n'
+    msg = f'These are the contributions included in *<https://github.com/{github_company_name}/{github_project}|{github_project.upper()}><https://github.com/{github_company_name}/{github_project}|{github_project.upper()}>* from *{start.day:02}/{start.month:02}* to *{end.day:02}/{end.month:02}*\n'
     if len(pr_reviews) > 0:
         msg += "*Contributions included during the period*\n"
         msg += '\n'.join(
             map(lambda pr: f'- <{pr.pr_data["html_url"]}|{pr.pr_data["title"].replace("`", "")}>', pr_reviews))
         msg += "\n"
+        if len(msg) > 2000:
+            send_slack_message_blocks(slack_token, slack_channel, [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": msg
+                    }
+                }
+            ])
+            msg = ""
     msg += "*Pull requests stats*\n"
     msg += f'created: `{stats.total_pr_created}`\n'
     msg += f'reviewed: `{stats.total_pr_reviewed}`\n'
