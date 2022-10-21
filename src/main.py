@@ -19,7 +19,6 @@ for github_project in github_company_repositories:
     stats = GithubStats(pr_created, pr_reviews)
     msg = f'These are the contributions included in *<https://github.com/{github_company_name}/{github_project}|{github_project.upper()}>* from *{start.day:02}/{start.month:02}* to *{end.day:02}/{end.month:02}*\n'
     if len(pr_reviews) > 0:
-        msg += "*Contributions included during the period*\n"
         for pr in pr_reviews:
             msg += f'- <{pr.pr_data["html_url"]}|{pr.pr_data["title"].replace("`", "")}>'
             msg += "\n"
