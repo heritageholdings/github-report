@@ -35,6 +35,7 @@ jobs:
     - name: Run GitHub feed
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        GH_COMPANY_REPOSITORIES: ${{ secrets.GH_COMPANY_REPOSITORIES }}
         SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
         SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
       run: |
