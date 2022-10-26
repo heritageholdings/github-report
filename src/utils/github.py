@@ -6,11 +6,11 @@ import requests
 from time import sleep
 import math
 
-from utils.env import github_company_name, github_token
+from utils.env import GITHUB_COMPANY_NAME, GITHUB_TOKEN
 
-github_issue_url = f'https://api.github.com/search/issues?q=is:pr+repo:{github_company_name}/'
-github_review_url = f'https://api.github.com/repos/{github_company_name}/%s/pulls/%d/reviews'
-github_pr_url = f'https://api.github.com/repos/{github_company_name}/%s/pulls'
+github_issue_url = f'https://api.github.com/search/issues?q=is:pr+repo:{GITHUB_COMPANY_NAME}/'
+github_review_url = f'https://api.github.com/repos/{GITHUB_COMPANY_NAME}/%s/pulls/%d/reviews'
+github_pr_url = f'https://api.github.com/repos/{GITHUB_COMPANY_NAME}/%s/pulls'
 
 
 @dataclass
@@ -100,7 +100,7 @@ class GithubStats:
 
     @staticmethod
     def get_repo_stats(repo):
-        headers = {'Authorization': f'Bearer {github_token}'} if github_token else {}
+        headers = {'Authorization': f'Bearer {GITHUB_TOKEN}'} if GITHUB_TOKEN else {}
         url = github_pr_url % repo
         req = requests.get(url, headers=headers)
         if req.status_code != 200:
@@ -124,7 +124,7 @@ class GithubStats:
 
 def get_pull_requests_data(repo, from_date: datetime, to_date: datetime, state: str = None,
                            created_or_updated: str = 'created') -> List[PullRequest]:
-    headers = {'Authorization': f'Bearer {github_token}'} if github_token else {}
+    headers = {'Authorization': f'Bearer {GITHUB_TOKEN}'} if GITHUB_TOKEN else {}
     base_url = github_issue_url + repo + (f'+state:{state}' if state else '')
     page = 1
     prs = []

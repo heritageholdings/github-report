@@ -1,26 +1,25 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import datetime
-import os
 
-from utils.env import days_span, github_company_repositories, github_company_name, slack_channel, slack_token
-from utils.github import get_pull_requests_data, GithubStats
+from utils.env import days_span, github_company_repositories, GITHUB_COMPANY_NAME, slack_channel, slack_token
+from utils.github2 import get_repo_stats2, group_by_state
 from utils.slack import send_slack_message_blocks
-
-
 
 end = datetime.datetime.now()
 start = end - datetime.timedelta(days=days_span)
-# it assumes that each item is a valid project inside {github_company_name} org
+# it assumes that each item is a valid project inside {GITHUB_COMPANY_NAME} org
 for github_project in github_company_repositories:
-    repo_stats = " | ".join([f'{v} {k}' for k, v in GithubStats.get_repo_stats(github_project).items()])
-    pr_created = get_pull_requests_data(github_project, start, end)
-    pr_reviews = get_pull_requests_data(github_project, start, end, 'closed', 'merged')
-    stats = GithubStats(pr_created, pr_reviews)
-    msg = f'These are the contributions included in *<https://github.com/{github_company_name}/{github_project}|{github_project.upper()}>* from *{start.day:02}/{start.month:02}* to *{end.day:02}/{end.month:02}*\n'
-    if len(pr_reviews) > 0:
-        for pr in pr_reviews:
-            msg += f'- <{pr.pr_data["html_url"]}|{pr.pr_data["title"].replace("`", "")}>'
+    pull_requests = get_repo_stats2(github_project, days_span)
+    pull_requests_created = list(filter(lambda pr: (end - pr.created_at).days <= days_span, pull_requests))
+    pull_requests_merged = list(filter(lambda pr: pr.merged, pull_requests))
+    pull_requests_reviewed = list(filter(lambda pr: len(pr.reviewers), pull_requests))
+    pull_requests_open_draft_closed = group_by_state(list(filter(lambda pr: pr.state in ["open","draft"], pull_requests)))
+    repo_stats = " | ".join([f'{v} {k}' for k, v in pull_requests_open_draft_closed.items()])
+    msg = f'These are the contributions included in *<https://github.com/{GITHUB_COMPANY_NAME}/{github_project}|{github_project.upper()}>* from *{start.day:02}/{start.month:02}* to *{end.day:02}/{end.month:02}*\n'
+    if len(pull_requests_reviewed) > 0:
+        for pr in pull_requests_reviewed:
+            msg += f'- <{pr.url}|{pr.title.replace("`", "")}>'
             msg += "\n"
             if len(msg) > 2000:
                 send_slack_message_blocks(slack_token, slack_channel, [
@@ -35,8 +34,8 @@ for github_project in github_company_repositories:
                 msg = ""
         msg += "\n"
     msg += "*Pull requests stats*\n"
-    msg += f'created: `{stats.total_pr_created}`\n'
-    msg += f'reviewed: `{stats.total_pr_reviewed}`\n'
+    msg += f'created: `{len(pull_requests)}`\n'
+    msg += f'reviewed: `{len(pull_requests_reviewed)}`\n'
     msg += f'current: `{repo_stats if len(repo_stats) else "all clear!"}`\n'
     thread = send_slack_message_blocks(slack_token, slack_channel, [
         {
@@ -47,6 +46,7 @@ for github_project in github_company_repositories:
             }
         }
     ])
+    break
     if (stats.total_pr_reviewed + stats.total_pr_created) == 0:
         continue
     # sort reviewer by contribution
@@ -70,7 +70,9 @@ for github_project in github_company_repositories:
         msg += f'PR created: {value.pr_created_count}\n'
         msg += f'PR created contribution: {value.pr_created_contribution}\n'
         msg += f'PR reviewed contribution: {value.pr_review_contribution}\n'
-        pr_reviewed_links = " - ".join(map(lambda pn: f'<https://github.com/{github_company_name}/{github_project}/pull/{pn}|#{pn}>', value.pr_reviewed))
+        pr_reviewed_links = " - ".join(
+            map(lambda pn: f'<https://github.com/{GITHUB_COMPANY_NAME}/{github_project}/pull/{pn}|#{pn}>',
+                value.pr_reviewed))
         msg += f'PR reviewed: {len(value.pr_reviewed)} {pr_reviewed_links}\n'
 
         send_slack_message_blocks(slack_token, slack_channel, [

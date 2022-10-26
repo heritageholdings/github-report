@@ -1,4 +1,5 @@
 requests==2.21.0
+PyGithub==1.56
 python-dateutil
 slack
 slackclient
