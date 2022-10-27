@@ -55,6 +55,12 @@ class PullRequest:
 
 def get_pull_requests_recently_updated(repository_name: str, days_before: int) -> List[
     PullRequest]:
+    """
+    return the list of the pull requests updated between days_before ago and now
+    :param repository_name:
+    :param days_before:
+    :return:
+    """
     now = datetime.now()
     g = Github(GITHUB_TOKEN)
     repo = g.get_repo(f"{GITHUB_COMPANY_NAME}/{repository_name}")
@@ -70,6 +76,12 @@ def get_pull_requests_recently_updated(repository_name: str, days_before: int) -
 
 def get_pull_requests_recently_created(repository_name: str, days_before: int) -> List[
     PullRequest]:
+    """
+    return the list of the pull requests created between days_before ago and now
+    :param repository_name:
+    :param days_before:
+    :return:
+    """
     now = datetime.now()
     g = Github(GITHUB_TOKEN)
     repo = g.get_repo(f"{GITHUB_COMPANY_NAME}/{repository_name}")
@@ -85,6 +97,11 @@ def get_pull_requests_recently_created(repository_name: str, days_before: int) -
 
 def get_pull_requests(repository_name: str) -> List[
     PullRequest]:
+    """
+    return the list of the current pull requests (open, draft)
+    :param repository_name:
+    :return:
+    """
     g = Github(GITHUB_TOKEN)
     repo = g.get_repo(f"{GITHUB_COMPANY_NAME}/{repository_name}")
     data = repo.get_pulls(state="open", sort="created", direction="desc")
