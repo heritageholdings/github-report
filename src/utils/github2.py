@@ -51,15 +51,17 @@ def get_repo_stats2(repository_name: str, days_before: int, state: Union[PRStatu
     return pull_requests
 
 
-class PRStatusCounter(TypedDict):
-    merged: List[PullRequest]
-    open: List[PullRequest]
-    closed: List[PullRequest]
-    reviewed: List[PullRequest]
-    draft: List[PullRequest]
+class PullRequestByStatus:
+
+    def __init__(self):
+        self.merged: List[PullRequest] = []
+        self.open: List[PullRequest] = []
+        self.closed: List[PullRequest] = []
+        self.reviewed: List[PullRequest] = []
+        self.draft: List[PullRequest] = []
 
 
-def group_by_state(pull_requests: List[PullRequest]) -> PRStatusCounter:
+def group_by_state(pull_requests: List[PullRequest]) -> PullRequestByStatus:
     """
     return a dictionary where the key is the PR state e the value the amount of the PR in that state
     states can be: open, closed, draft, merged, reviewed
@@ -67,17 +69,14 @@ def group_by_state(pull_requests: List[PullRequest]) -> PRStatusCounter:
     :param pull_requests:
     :return:
     """
-    by_state = {}
+    by_state = PullRequestByStatus()
     for pr in pull_requests:
         if pr.merged:
-            by_state["merged"] = by_state.get("merged", [])
-            by_state["merged"].append(pr)
+            by_state.merged.append(pr)
             if len(pr.reviewers):
-                by_state["reviewed"] = by_state.get("reviewed", [])
-                by_state["reviewed"].append(pr)
+                by_state.reviewed.append(pr)
             continue
-        by_state[pr.state] = by_state.get(pr.state, [])
-        by_state[pr.state].append(pr)
+        getattr(by_state, pr.state).append(pr)
     return by_state
 
 
@@ -90,7 +89,6 @@ class DeveloperContribution:
     pr_created: List[str]
 
 
-
 def group_by_developer(pull_requests: List[PullRequest]):
     by_developer = {}
     for pr in pull_requests:
@@ -99,7 +97,8 @@ def group_by_developer(pull_requests: List[PullRequest]):
         developer_contribution.pr_created.append(pr.number)
         by_developer[developer_contribution.developer.login_name] = developer_contribution
         for review in pr.reviewers:
-            review_developer_contribution = by_developer.get(review.login_name, DeveloperContribution(review, 0, 0, [], []))
+            review_developer_contribution = by_developer.get(review.login_name,
+                                                             DeveloperContribution(review, 0, 0, [], []))
             review_developer_contribution.review_contribution += pr.contribution
             review_developer_contribution.pr_reviewed.append(pr.number)
             by_developer[review_developer_contribution.developer.login_name] = review_developer_contribution

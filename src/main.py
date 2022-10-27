@@ -13,16 +13,10 @@ for repository in github_company_repositories:
     pull_requests = get_repo_stats2(repository, days_span)
     by_state = group_by_state(pull_requests)
     pull_requests_created = list(filter(lambda pr: (end - pr.created_at).days <= days_span, pull_requests))
-    pull_requests_merged = by_state.get("merged", [])
-    pull_requests_open = by_state.get("open", [])
-    pull_requests_closed = by_state.get("closed", [])
-    pull_requests_reviewed = by_state.get("reviewed", [])
-    pull_requests_open_draft_closed = {"draft": by_state.get("draft", []), "open": by_state.get("open", []),
-                                       "closed": by_state.get("closed", [])}
-    repo_stats = " | ".join([f'{len(v)} {k}' for k, v in pull_requests_open_draft_closed.items()])
+
     msg = f'These are the contributions included in *<https://github.com/{GITHUB_COMPANY_NAME}/{repository}|{repository.upper()}>* from *{start.day:02}/{start.month:02}* to *{end.day:02}/{end.month:02}*\n'
-    if len(pull_requests_reviewed) > 0:
-        for pr in pull_requests_reviewed:
+    if len(by_state.reviewed) > 0:
+        for pr in by_state.reviewed:
             msg += f'- <{pr.url}|{pr.title.replace("`", "")}>'
             msg += "\n"
             if len(msg) > 2000:
@@ -39,9 +33,13 @@ for repository in github_company_repositories:
         msg += "\n"
     msg += "*Pull requests stats*\n"
     msg += f'created: `{len(pull_requests)}`\n'
-    msg += f'reviewed: `{len(pull_requests_reviewed)}`\n'
-    if len(pull_requests_closed):
-        msg += f'closed: `{len(pull_requests_closed)}`\n'
+    msg += f'reviewed: `{len(by_state.reviewed)}`\n'
+    if len(by_state.closed):
+        msg += f'closed: `{len(by_state.closed)}`\n'
+    open_draft_closed = {"draft": by_state.draft, "open": by_state.open}
+    # exclude from current those states that have no PRs
+    repo_stats = " | ".join([f'{len(open_draft_closed[k])} {k}' for k in filter(lambda k: len(open_draft_closed[k]),
+                                                                                open_draft_closed)])
     msg += f'current: `{repo_stats if len(repo_stats) else "all clear!"}`\n'
     thread = send_slack_message_blocks(slack_token, slack_channel, [
         {
@@ -52,7 +50,7 @@ for repository in github_company_repositories:
             }
         }
     ])
-    by_developer = group_by_developer(pull_requests_merged + pull_requests_open)
+    by_developer = group_by_developer(by_state.merged + by_state.open)
     # sort reviewer by contribution
     reviewers = sorted(by_developer.keys(),
                        key=lambda x: by_developer[x].contribution + by_developer[x].review_contribution,
