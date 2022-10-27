@@ -68,6 +68,21 @@ def get_pull_requests_recently_updated(repository_name: str, days_before: int) -
     return pull_requests
 
 
+def get_pull_requests_recently_created(repository_name: str, days_before: int) -> List[
+    PullRequest]:
+    now = datetime.now()
+    g = Github(GITHUB_TOKEN)
+    repo = g.get_repo(f"{GITHUB_COMPANY_NAME}/{repository_name}")
+    data = repo.get_pulls(state="all", sort="created", direction="desc")
+    pull_requests = []
+    for pull in data:
+        # the PR is older than we are looking for, break since the following ones are older
+        if (now - pull.created_at).days > days_before:
+            break
+        pull_requests.append(PullRequest(pull))
+    return pull_requests
+
+
 def get_pull_requests(repository_name: str) -> List[
     PullRequest]:
     g = Github(GITHUB_TOKEN)
