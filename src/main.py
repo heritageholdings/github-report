@@ -3,7 +3,7 @@
 import datetime
 
 from utils.env import days_span, github_company_repositories, GITHUB_COMPANY_NAME, slack_channel, slack_token
-from utils.github2 import get_pull_requests_recently_updated, group_by_state, group_by_developer, get_pull_requests
+from utils.github import get_pull_requests_recently_updated, group_by_state, group_by_developer, get_pull_requests
 from utils.slack import send_slack_message_blocks
 
 end = datetime.datetime.now()

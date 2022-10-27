@@ -1,177 +1,121 @@
 from dataclasses import dataclass
-from functools import reduce
-from typing import Any, List, Set
-import datetime
-import requests
-from time import sleep
-import math
+from typing import Literal, List
+from datetime import datetime
+from github import Github
+from github.PullRequest import PullRequest as GithubPullRequest
 
-from utils.env import GITHUB_COMPANY_NAME, GITHUB_TOKEN
+from utils.env import GITHUB_TOKEN, GITHUB_COMPANY_NAME
 
-github_issue_url = f'https://api.github.com/search/issues?q=is:pr+repo:{GITHUB_COMPANY_NAME}/'
-github_review_url = f'https://api.github.com/repos/{GITHUB_COMPANY_NAME}/%s/pulls/%d/reviews'
-github_pr_url = f'https://api.github.com/repos/{GITHUB_COMPANY_NAME}/%s/pulls'
+PRStatus = Literal["open", "closed", "draft", "merged"]
+
+
+@dataclass(frozen=True)
+class GithubUser:
+    login_name: str
+    name: str
+
+
+class PullRequest:
+    """
+    This class holds the minimal set of a PR data used to do stats
+    """
+
+    def __init__(self, pr: GithubPullRequest):
+        self.state: PRStatus
+        if pr.merged:
+            self.state = "merged"
+        elif pr.draft:
+            self.state = "draft"
+        else:
+            self.state = pr.state
+        self.number: int = pr.number
+        self.title: str = pr.title
+        self.author: GithubUser = GithubUser(pr.user.login, pr.user.name)
+        self.merged: bool = pr.merged
+        self.draft: bool = pr.draft
+        self.merged_by: GithubUser = GithubUser(pr.merged_by.login, pr.merged_by.name) if pr.merged else None
+        self.additions: int = pr.additions
+        self.deletions: int = pr.deletions
+        self.created_at: datetime = pr.created_at
+        self.url: str = pr.html_url
+        self.contribution = self.additions + self.deletions
+        self.reviewers = set(map(lambda r: GithubUser(r.user.login, r.user.name),
+                                 filter(lambda r: r.state in ("APPROVED", "CHANGES_REQUESTED"), pr.get_reviews())))
+
+
+def get_pull_requests_recently_updated(repository_name: str, days_before: int) -> List[
+    PullRequest]:
+    now = datetime.now()
+    g = Github(GITHUB_TOKEN)
+    repo = g.get_repo(f"{GITHUB_COMPANY_NAME}/{repository_name}")
+    data = repo.get_pulls(state="all", sort="updated", direction="desc")
+    pull_requests = []
+    for pull in data:
+        # the PR is older than we are looking for, break since the following ones are older
+        if (now - pull.updated_at).days > days_before:
+            break
+        pull_requests.append(PullRequest(pull))
+    return pull_requests
+
+
+def get_pull_requests(repository_name: str) -> List[
+    PullRequest]:
+    g = Github(GITHUB_TOKEN)
+    repo = g.get_repo(f"{GITHUB_COMPANY_NAME}/{repository_name}")
+    data = repo.get_pulls(state="open", sort="created", direction="desc")
+    pull_requests = []
+    for pull in data:
+        pull_requests.append(PullRequest(pull))
+    return pull_requests
+
+
+class PullRequestByStatus:
+
+    def __init__(self):
+        self.merged: List[PullRequest] = []
+        self.open: List[PullRequest] = []
+        self.closed: List[PullRequest] = []
+        self.reviewed: List[PullRequest] = []
+        self.draft: List[PullRequest] = []
+
+
+def group_by_state(pull_requests: List[PullRequest]) -> PullRequestByStatus:
+    """
+    return a dictionary where the key is the PR state e the value the amount of the PR in that state
+    states can be: open, closed, draft, merged, reviewed
+    a PR can be simultaneously in merged and reviewed state (it means it has been merged and someone approved it)
+    :param pull_requests:
+    :return:
+    """
+    by_state = PullRequestByStatus()
+    for pr in pull_requests:
+        if pr.state == "merged":
+            if len(pr.reviewers):
+                by_state.reviewed.append(pr)
+        getattr(by_state, pr.state).append(pr)
+    return by_state
 
 
 @dataclass
-class PullRequest:
-    pr_data: Any
-    pr_review_data: Any
-
-    @property
-    def author(self):
-        return self.pr_data["user"]["login"]
-
-    @property
-    def additions(self):
-        return self.pr_data["additions"]
-
-    @property
-    def deletions(self):
-        return self.pr_data["deletions"]
-
-    @property
-    def contribution(self):
-        return self.additions + self.deletions
-
-    @property
-    def reviewers(self):
-        '''
-        collect all reviewers name that contribute to PR approving
-        note: it's used a list instead of a set to allow duplicates
-        :return:
-        '''
-        reviewers = []
-        if self.pr_review_data:
-            for d in self.pr_review_data:
-                # perhaps we should use a dedicated API https://docs.github.com/en/rest/reference/pulls#check-if-a-pull-request-has-been-merged
-                if d["state"] == "APPROVED":
-                    reviewers.append(d["user"]["login"])
-        return reviewers
+class DeveloperContribution:
+    developer: GithubUser
+    contribution: int
+    review_contribution: int
+    pr_reviewed: List[str]
+    pr_created: List[str]
 
 
-class Stats:
-    def __init__(self):
-        self.pr_created_count = 0
-        self.pr_created_contribution = 0
-        self.pr_reviewed: Set[int] = set()
-        self.pr_review_contribution = 0
-
-    @property
-    def contribution_ratio(self):
-        if self.pr_created_contribution == 0:
-            return 0
-        return self.pr_review_contribution / self.pr_created_contribution
-
-
-class GithubStats:
-
-    def __init__(self, pull_requests_created: List[PullRequest], pull_requests_reviewed: List[PullRequest]):
-        self.pull_requests_created = pull_requests_created
-        self.pull_requests_reviewed = pull_requests_reviewed
-        self.data = {}
-        self.total_pr_created = 0
-        self.total_pr_reviewed = 0
-        self.compute()
-
-    def compute(self):
-        '''
-        indexing author stats by author name (github name)
-        :return:
-        '''
-        pr_created = 0
-        pr_reviewed = 0
-        for pr in self.pull_requests_created:
-            if pr.author not in self.data:
-                self.data[pr.author] = Stats()
-            self.data[pr.author].pr_created_contribution += pr.contribution
-            self.data[pr.author].pr_created_count += 1
-            pr_created += 1
-        for pr in self.pull_requests_reviewed:
-            pr_reviewed += 1 if len(pr.reviewers) > 0 else 0
-            for reviewer in pr.reviewers:
-                if reviewer not in self.data:
-                    self.data[reviewer] = Stats()
-                self.data[reviewer].pr_reviewed.add(pr.pr_data['number'])
-                self.data[reviewer].pr_review_contribution += pr.contribution
-        # compute all PR created and reviewed
-        self.total_pr_created = pr_created
-        self.total_pr_reviewed = pr_reviewed
-
-    @staticmethod
-    def get_repo_stats(repo):
-        headers = {'Authorization': f'Bearer {GITHUB_TOKEN}'} if GITHUB_TOKEN else {}
-        url = github_pr_url % repo
-        req = requests.get(url, headers=headers)
-        if req.status_code != 200:
-            raise Exception(f"status code unexpected {req.status_code} for request {url}. Perhaps do you need to use a Github token?")
-        data = req.json()
-
-        # dict where the key is the state and the value is the counter
-        def reduce_func(acc, curr):
-            if curr['draft']:
-                state = 'draft'
-            else:
-                state = curr['state']
-            if state not in acc:
-                acc[state] = 0
-            acc[state] += 1
-            return acc
-
-        state_counter = reduce(reduce_func, data, {})
-        return state_counter
-
-
-def get_pull_requests_data(repo, from_date: datetime, to_date: datetime, state: str = None,
-                           created_or_updated: str = 'created') -> List[PullRequest]:
-    headers = {'Authorization': f'Bearer {GITHUB_TOKEN}'} if GITHUB_TOKEN else {}
-    base_url = github_issue_url + repo + (f'+state:{state}' if state else '')
-    page = 1
-    prs = []
-    while True:
-        # request pr created | updated  in a date span
-        url = base_url + f'+{created_or_updated}:{from_date:%Y-%m-%d}..{to_date:%Y-%m-%d}&page={page}'
-        req = requests.get(url, headers=headers)
-        if req.status_code != 200:
-            raise Exception(
-                f"status code unexpected {req.status_code} for request {url}")
-
-        data = req.json()
-        # no more items
-        if len(data["items"]) == 0:
-            break
-        for item in data["items"]:
-            pr_url = item["pull_request"]["url"]
-            # get pr details
-            req_pr = requests.get(pr_url, headers=headers)
-            sleep(0.1)
-            # get pr reviewers details
-            req_url = github_review_url % (repo, item["number"])
-            req_review = requests.get(req_url, headers=headers)
-            if req_pr.status_code != 200 or req_review.status_code != 200:
-                raise Exception(
-                    f"status code unexpected {req.status_code} for request {url}")
-            prs.append(PullRequest(req_pr.json(), req_review.json()))
-        page += 1
-    return prs
-
-
-def get_reviewer_description(stats: Stats) -> str:
-    '''
-    ratio = PR reviewed contribution / PR created contribution
-    🎖️ -> only review contribution, no pr created
-    🤨 -> ratio <= 0.1
-    ⭐ -> one for each 0.2 of ceil(ratio): es: 0.13-> * , 0.55 -> ***, 0.95 -> *****
-    🏆 -> ration >= 1
-    :param stats:
-    :return:
-    '''
-    if stats.pr_created_contribution == 0 and stats.pr_review_contribution > 0:
-        return '🎖️ reviewer'
-    contribution_ratio = 0 if stats.contribution_ratio <= 0.1 else stats.contribution_ratio
-    msg = f'{stats.contribution_ratio: .2f} (reviewed / created)'
-    if contribution_ratio == 0:
-        return f'🤨 {msg}'
-    if contribution_ratio >= 1:
-        return f'🏆 {msg}'
-    return '⭐' * math.ceil(contribution_ratio / 0.2) + f' {msg}'
+def group_by_developer(pull_requests: List[PullRequest]):
+    by_developer = {}
+    for pr in pull_requests:
+        developer_contribution = by_developer.get(pr.author.login_name, DeveloperContribution(pr.author, 0, 0, [], []))
+        developer_contribution.contribution += pr.contribution
+        developer_contribution.pr_created.append(pr.number)
+        by_developer[developer_contribution.developer.login_name] = developer_contribution
+        for review in pr.reviewers:
+            review_developer_contribution = by_developer.get(review.login_name,
+                                                             DeveloperContribution(review, 0, 0, [], []))
+            review_developer_contribution.review_contribution += pr.contribution
+            review_developer_contribution.pr_reviewed.append(pr.number)
+            by_developer[review_developer_contribution.developer.login_name] = review_developer_contribution
+    return by_developer
