@@ -6,7 +6,7 @@ from github.PullRequest import PullRequest as GithubPullRequest
 
 from utils.env import GITHUB_TOKEN, GITHUB_COMPANY_NAME
 
-PRStatus = Literal["open", "closed", "draft"]
+PRStatus = Literal["open", "closed", "draft", "merged"]
 
 
 @dataclass(frozen=True)
@@ -21,11 +21,18 @@ class PullRequest:
     """
 
     def __init__(self, pr: GithubPullRequest):
-        self.state: PRStatus = pr.state
+        self.state: PRStatus
+        if pr.merged:
+            self.state = "merged"
+        elif pr.draft:
+            self.state = "draft"
+        else:
+            self.state = pr.state
         self.number: int = pr.number
         self.title: str = pr.title
         self.author: GithubUser = GithubUser(pr.user.login, pr.user.name)
         self.merged: bool = pr.merged
+        self.draft: bool = pr.draft
         self.merged_by: GithubUser = GithubUser(pr.merged_by.login, pr.merged_by.name) if pr.merged else None
         self.additions: int = pr.additions
         self.deletions: int = pr.deletions
@@ -36,17 +43,28 @@ class PullRequest:
                                  filter(lambda r: r.state in ("APPROVED", "CHANGES_REQUESTED"), pr.get_reviews())))
 
 
-def get_repo_stats2(repository_name: str, days_before: int, state: Union[PRStatus, Literal["all"]] = "all") -> List[
+def get_pull_requests_recently_updated(repository_name: str, days_before: int) -> List[
     PullRequest]:
     now = datetime.now()
     g = Github(GITHUB_TOKEN)
     repo = g.get_repo(f"{GITHUB_COMPANY_NAME}/{repository_name}")
-    data = repo.get_pulls(state=state, sort="created", direction="desc")
+    data = repo.get_pulls(state="all", sort="updated", direction="desc")
     pull_requests = []
     for pull in data:
         # the PR is older than we are looking for, break since the following ones are older
         if (now - pull.updated_at).days > days_before:
             break
+        pull_requests.append(PullRequest(pull))
+    return pull_requests
+
+
+def get_pull_requests(repository_name: str) -> List[
+    PullRequest]:
+    g = Github(GITHUB_TOKEN)
+    repo = g.get_repo(f"{GITHUB_COMPANY_NAME}/{repository_name}")
+    data = repo.get_pulls(state="open", sort="created", direction="desc")
+    pull_requests = []
+    for pull in data:
         pull_requests.append(PullRequest(pull))
     return pull_requests
 
@@ -71,11 +89,9 @@ def group_by_state(pull_requests: List[PullRequest]) -> PullRequestByStatus:
     """
     by_state = PullRequestByStatus()
     for pr in pull_requests:
-        if pr.merged:
-            by_state.merged.append(pr)
+        if pr.state == "merged":
             if len(pr.reviewers):
                 by_state.reviewed.append(pr)
-            continue
         getattr(by_state, pr.state).append(pr)
     return by_state
 

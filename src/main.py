@@ -3,14 +3,14 @@
 import datetime
 
 from utils.env import days_span, github_company_repositories, GITHUB_COMPANY_NAME, slack_channel, slack_token
-from utils.github2 import get_repo_stats2, group_by_state, group_by_developer
+from utils.github2 import get_pull_requests_recently_updated, group_by_state, group_by_developer, get_pull_requests
 from utils.slack import send_slack_message_blocks
 
 end = datetime.datetime.now()
 start = end - datetime.timedelta(days=days_span)
 # it assumes that each item is a valid project inside {GITHUB_COMPANY_NAME} org
 for repository in github_company_repositories:
-    pull_requests = get_repo_stats2(repository, days_span)
+    pull_requests = get_pull_requests_recently_updated(repository, days_span)
     by_state = group_by_state(pull_requests)
     pull_requests_created = list(filter(lambda pr: (end - pr.created_at).days <= days_span, pull_requests))
 
@@ -36,10 +36,11 @@ for repository in github_company_repositories:
     msg += f'reviewed: `{len(by_state.reviewed)}`\n'
     if len(by_state.closed):
         msg += f'closed: `{len(by_state.closed)}`\n'
-    open_draft_closed = {"draft": by_state.draft, "open": by_state.open}
+    current_pull_requests_list = group_by_state(get_pull_requests(repository))
+    current_pr_list = {"draft": current_pull_requests_list.draft, "open": current_pull_requests_list.open}
     # exclude from current those states that have no PRs
-    repo_stats = " | ".join([f'{len(open_draft_closed[k])} {k}' for k in filter(lambda k: len(open_draft_closed[k]),
-                                                                                open_draft_closed)])
+    repo_stats = " | ".join([f'{len(current_pr_list[k])} {k}' for k in filter(lambda k: len(current_pr_list[k]),
+                                                                              current_pr_list)])
     msg += f'current: `{repo_stats if len(repo_stats) else "all clear!"}`\n'
     thread = send_slack_message_blocks(slack_token, slack_channel, [
         {
@@ -50,7 +51,7 @@ for repository in github_company_repositories:
             }
         }
     ])
-    by_developer = group_by_developer(by_state.merged + by_state.open)
+    by_developer = group_by_developer(by_state.merged + by_state.open + by_state.draft)
     # sort reviewer by contribution
     reviewers = sorted(by_developer.keys(),
                        key=lambda x: by_developer[x].contribution + by_developer[x].review_contribution,
@@ -67,9 +68,10 @@ for repository in github_company_repositories:
             }
         ], thread.data['ts'])
 
-        for developer_contribution in by_developer.values():
+        for developer_key in reviewers:
+            developer_contribution = by_developer[developer_key]
             developer = developer_contribution.developer
-            header = f'`{developer.name if developer.name else "n/a"} (@{developer.login_name})`\n'
+            header = f'`<https://github.com/{developer.login_name}|@{developer.login_name}>{" " + developer.name if developer.name else ""}`\n'
             msg = ''
             msg += f'PR created: {len(developer_contribution.pr_created)}\n'
             msg += f'PR created contribution: {developer_contribution.contribution}\n'
