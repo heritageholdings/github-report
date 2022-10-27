@@ -2,17 +2,17 @@
 # -*- coding: utf-8 -*-
 import datetime
 
-from utils.env import days_span, github_company_repositories, GITHUB_COMPANY_NAME, slack_channel, slack_token
+from utils.env import DAYS_SPAN, GITHUB_COMPANY_REPOSITORIES, GITHUB_COMPANY_NAME, SLACK_CHANNEL, slack_token
 from utils.github import get_pull_requests_recently_updated, group_by_state, group_by_developer, get_pull_requests
 from utils.slack import send_slack_message_blocks
 
 end = datetime.datetime.now()
-start = end - datetime.timedelta(days=days_span)
+start = end - datetime.timedelta(days=DAYS_SPAN)
 # it assumes that each item is a valid project inside {GITHUB_COMPANY_NAME} org
-for repository in github_company_repositories:
-    pull_requests = get_pull_requests_recently_updated(repository, days_span)
+for repository in GITHUB_COMPANY_REPOSITORIES:
+    pull_requests = get_pull_requests_recently_updated(repository, DAYS_SPAN)
     by_state = group_by_state(pull_requests)
-    pull_requests_created = list(filter(lambda pr: (end - pr.created_at).days <= days_span, pull_requests))
+    pull_requests_created = list(filter(lambda pr: (end - pr.created_at).days <= DAYS_SPAN, pull_requests))
 
     msg = f'These are the contributions included in *<https://github.com/{GITHUB_COMPANY_NAME}/{repository}|{repository.upper()}>* from *{start.day:02}/{start.month:02}* to *{end.day:02}/{end.month:02}*\n'
     if len(by_state.reviewed) > 0:
@@ -20,7 +20,7 @@ for repository in github_company_repositories:
             msg += f'- <{pr.url}|{pr.title.replace("`", "")}>'
             msg += "\n"
             if len(msg) > 2000:
-                send_slack_message_blocks(slack_token, slack_channel, [
+                send_slack_message_blocks(slack_token, SLACK_CHANNEL, [
                     {
                         "type": "section",
                         "text": {
@@ -42,7 +42,7 @@ for repository in github_company_repositories:
     repo_stats = " | ".join([f'{len(current_pr_list[k])} {k}' for k in filter(lambda k: len(current_pr_list[k]),
                                                                               current_pr_list)])
     msg += f'current: `{repo_stats if len(repo_stats) else "all clear!"}`\n'
-    thread = send_slack_message_blocks(slack_token, slack_channel, [
+    thread = send_slack_message_blocks(slack_token, SLACK_CHANNEL, [
         {
             "type": "section",
             "text": {
@@ -58,7 +58,7 @@ for repository in github_company_repositories:
                        reverse=True)
 
     if len(by_developer) > 0:
-        send_slack_message_blocks(slack_token, slack_channel, [
+        send_slack_message_blocks(slack_token, SLACK_CHANNEL, [
             {
                 "type": "section",
                 "text": {
@@ -71,7 +71,7 @@ for repository in github_company_repositories:
         for developer_key in reviewers:
             developer_contribution = by_developer[developer_key]
             developer = developer_contribution.developer
-            header = f'`<https://github.com/{developer.login_name}|@{developer.login_name}>{" " + developer.name if developer.name else ""}`\n'
+            header = f'`<https://github.com/{developer.login_name}|@{developer.login_name}>{" (" + developer.name + ")" if developer.name else ""}`\n'
             msg = ''
             msg += f'PR created: {len(developer_contribution.pr_created)}\n'
             msg += f'PR created contribution: {developer_contribution.contribution}\n'
@@ -81,7 +81,7 @@ for repository in github_company_repositories:
                     developer_contribution.pr_reviewed))
             msg += f'PR reviewed: {len(developer_contribution.pr_reviewed)} {pr_reviewed_links}\n'
 
-            send_slack_message_blocks(slack_token, slack_channel, [
+            send_slack_message_blocks(slack_token, SLACK_CHANNEL, [
                 {
                     "type": "section",
                     "text": {

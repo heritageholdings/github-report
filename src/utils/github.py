@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Literal, List
+from typing import Literal, List, Dict
 from datetime import datetime
 from github import Github
 from github.PullRequest import PullRequest as GithubPullRequest
@@ -13,6 +13,16 @@ PRStatus = Literal["open", "closed", "draft", "merged"]
 class GithubUser:
     login_name: str
     name: str
+
+
+class PullRequestByStatus:
+
+    def __init__(self):
+        self.merged: List[PullRequest] = []
+        self.open: List[PullRequest] = []
+        self.closed: List[PullRequest] = []
+        self.reviewed: List[PullRequest] = []
+        self.draft: List[PullRequest] = []
 
 
 class PullRequest:
@@ -69,21 +79,9 @@ def get_pull_requests(repository_name: str) -> List[
     return pull_requests
 
 
-class PullRequestByStatus:
-
-    def __init__(self):
-        self.merged: List[PullRequest] = []
-        self.open: List[PullRequest] = []
-        self.closed: List[PullRequest] = []
-        self.reviewed: List[PullRequest] = []
-        self.draft: List[PullRequest] = []
-
-
 def group_by_state(pull_requests: List[PullRequest]) -> PullRequestByStatus:
     """
-    return a dictionary where the key is the PR state e the value the amount of the PR in that state
-    states can be: open, closed, draft, merged, reviewed
-    a PR can be simultaneously in merged and reviewed state (it means it has been merged and someone approved it)
+    note PR can be simultaneously in merged and reviewed state (it means it has been merged and someone approved it)
     :param pull_requests:
     :return:
     """
@@ -105,7 +103,14 @@ class DeveloperContribution:
     pr_created: List[str]
 
 
-def group_by_developer(pull_requests: List[PullRequest]):
+def group_by_developer(pull_requests: List[PullRequest]) -> Dict:
+    """
+    from the given pull_requests list, return a dictionary where the key is the login name of the developer
+    and the value is his/her contribution (DeveloperContribution)
+    a developer can contribute on PR by creating or by reviewing it
+    :param pull_requests:
+    :return:
+    """
     by_developer = {}
     for pr in pull_requests:
         developer_contribution = by_developer.get(pr.author.login_name, DeveloperContribution(pr.author, 0, 0, [], []))

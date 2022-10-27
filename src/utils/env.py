@@ -1,9 +1,10 @@
 import os
 GITHUB_TOKEN = os.getenv('GH_TOKEN', None)
-slack_token = os.getenv('SLACK_TOKEN')
-days_span = os.getenv('DAYS_SPAN', 7)
-slack_channel = os.getenv('SLACK_CHANNEL', 'test_feed')
+SLACK_TOKEN = os.getenv('SLACK_TOKEN', None)
+DAYS_SPAN = os.getenv('DAYS_SPAN', 7)
+SLACK_CHANNEL = os.getenv('SLACK_CHANNEL', 'test_feed')
 GITHUB_COMPANY_NAME = os.getenv('GH_COMPANY_NAME', 'heritageholdings')
-github_company_repositories = list(
+GITHUB_COMPANY_REPOSITORIES = list(
     map(lambda item: item.strip(), os.getenv('GH_COMPANY_REPOSITORIES', 'iconic').split(",")))
-assert slack_token is not None
+
+assert SLACK_TOKEN is not None, "Slack token cannot be null"
