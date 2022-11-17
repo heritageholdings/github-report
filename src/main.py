@@ -24,7 +24,7 @@ for repository in GITHUB_COMPANY_REPOSITORIES:
     current_pull_requests_list = group_by_state(get_pull_requests(repository))
     current_pr_list = {"draft": current_pull_requests_list.draft, "open": current_pull_requests_list.open}
     # exclude from current those states that have no PRs
-    repo_stats = " & ".join([f'{len(current_pr_list[k])} {k}' for k in filter(lambda k: len(current_pr_list[k]),
+    repo_stats = " & ".join([f'{len(current_pr_list[k])} {k}' for k in filter(lambda k: len(current_pr_list[k]) > 0,
                                                                               current_pr_list)])
     by_type = group_by_type(by_state.merged)
     msg += " | ".join(f'`{k}: {len(v)}`' for k, v in by_type.items()) + "\n"

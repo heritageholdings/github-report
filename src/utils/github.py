@@ -117,6 +117,7 @@ def group_by_state(pull_requests: List[PullRequest]) -> PullRequestByStatus:
     by_state = PullRequestByStatus()
     for pr in pull_requests:
         if pr.state == "merged":
+            # if the PR has also reviews add it to the 'reviewed' list
             if len(pr.reviewers):
                 by_state.reviewed.append(pr)
         getattr(by_state, pr.state).append(pr)
