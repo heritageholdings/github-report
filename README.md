@@ -2,7 +2,7 @@
 GitHub report is a simple tool that collects data from our repositories
 and send them to a dedicated Slack channel as a weekly feed
 
-<img src="img/github-report-slack_s.png" height="600">
+<img src="img/github-report-slack_s.png" height="700">
 
 ## Setup
 `Python` >= 3.5 is required<br/>
