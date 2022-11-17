@@ -3,6 +3,7 @@ GitHub report is a simple tool that collects data from our repositories
 and send them to a dedicated Slack channel as a weekly feed
 
 ## Setup
+`Python` >= 3.5 is required<br/>
 Make sure that all dependencies in [requirements.txt](requirements.txt) have been installed in your environment
 
 `pip install -r requirements.txt`
