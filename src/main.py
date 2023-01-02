@@ -14,22 +14,29 @@ for repository in GITHUB_COMPANY_REPOSITORIES:
     pull_requests_recently_updated = get_pull_requests_recently_updated(repository, DAYS_SPAN)
     by_state = group_by_state(pull_requests_recently_updated)
     pull_requests_created = get_pull_requests_recently_created(repository, DAYS_SPAN)
-
-    msg = f'These are the stats about *<https://github.com/{GITHUB_COMPANY_NAME}/{repository}|{repository.upper()}>* repository from *{start.day:02}/{start.month:02}* to *{end.day:02}/{end.month:02}*\n'
-    msg += "*Pull requests stats*\n"
+    start_date = f'{start.day:02}/{start.month:02}'
+    end_date = f'{end.day:02}/{end.month:02}'
+    if start.year != end.year:
+        start_date += f'/{start.year}'
+        end_date += f'/{end.year}'
+    msg = f'These are the stats about *<https://github.com/{GITHUB_COMPANY_NAME}/{repository}|{repository.upper()}>* repository from *{start_date}* to *{end_date}*\n'
+    msg += "*Pull requests*\n"
     msg += f'`{len(pull_requests_created)}` _created_\n'
-    msg += f'`{len(by_state.merged)}` _merged_ (`{len(by_state.reviewed)}` _reviewed_)\n'
-    if len(by_state.closed):
-        msg += f'`{len(by_state.closed)}` _closed_\n'
+    reviewed_msg = f' {float(len(by_state.reviewed)/len(by_state.merged))*100:,.2f}% _reviewed_' if len(by_state.merged) > 0 else ''
+    msg += f'`{len(by_state.merged)}` _merged_{reviewed_msg}\n'
+
     current_pull_requests_list = group_by_state(get_pull_requests(repository))
     current_pr_list = {"draft": current_pull_requests_list.draft, "open": current_pull_requests_list.open}
     # exclude from current those states that have no PRs
     repo_stats = " & ".join([f'{len(current_pr_list[k])} {k}' for k in filter(lambda k: len(current_pr_list[k]) > 0,
                                                                               current_pr_list)])
     by_type = group_by_type(by_state.merged)
-    msg += " | ".join(f'`{k}: {len(v)}`' for k, v in by_type.items()) + "\n"
-    msg += f'current `{repo_stats if len(repo_stats) else "all clear!"}`\n'
-
+    if len(by_type):
+        msg += " | ".join(f'`{k}: {len(v)}`' for k, v in by_type.items())
+        msg += " _merged PR_\n"
+    if len(by_state.closed):
+        msg += f'`{len(by_state.closed)}` _closed PR_\n'
+    msg += f'`{repo_stats if len(repo_stats) else "all clear!"}` _current PR list_\n'
     thread = send_slack_message_blocks(SLACK_CHANNEL, [
         {
             "type": "section",
