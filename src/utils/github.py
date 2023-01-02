@@ -28,13 +28,18 @@ class PullRequestByStatus:
 class PullRequest:
     """
     This class holds the minimal set of a PR data used to do stats
+    To have a flat view of the all states, these are the possible values:
+    - open
+    - closed (the PR could be either in open and draft state)
+    - merged
+    - draft (only when the PR is open)
     """
 
     def __init__(self, pr: GithubPullRequest):
         self.state: PRStatus
         if pr.merged:
             self.state = "merged"
-        elif pr.draft:
+        elif pr.draft and pr.state == 'open':
             self.state = "draft"
         else:
             self.state = pr.state
