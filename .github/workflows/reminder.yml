@@ -1,7 +1,7 @@
 name: Heritage Reminder
 on:
   schedule:
-    - cron: '35 09 * * 4'
+    - cron: '00 10 * * 1,4'
 
 permissions:
   contents: read
