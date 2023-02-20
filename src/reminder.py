@@ -21,7 +21,7 @@ def send_reminder(msg: str):
 pairs = get_today_programming_pairs()
 msg = ''
 if pairs:
-	msg += f'\n\n:busts_in_silhouette: today schedule\n'
+	msg += f'\n\n:busts_in_silhouette\n'
 	for pair in pairs:
 		msg += f'- {pair[0]} and {pair[1]}\n'
 send_reminder(
