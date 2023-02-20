@@ -65,22 +65,23 @@ for repository in GITHUB_COMPANY_REPOSITORIES:
                 ], thread.data['ts'])
                 msg = ""
         msg += "\n"
-    thread = send_slack_message_blocks(SLACK_CHANNEL, [
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": msg
+    if len(msg):
+        thread = send_slack_message_blocks(SLACK_CHANNEL, [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": msg
+                }
             }
-        }
-    ], thread.data['ts'])
+        ], thread.data['ts'])
     by_developer = group_by_developer(by_state.merged + by_state.open + by_state.draft)
     # sort reviewer by contribution
     reviewers = sorted(by_developer.keys(),
                        key=lambda x: by_developer[x].contribution + by_developer[x].review_contribution,
                        reverse=True)
 
-    if len(by_developer) > 0:
+    if len(by_developer) > 0 and thread:
         send_slack_message_blocks(SLACK_CHANNEL, [
             {
                 "type": "section",
