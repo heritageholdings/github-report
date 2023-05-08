@@ -22,7 +22,7 @@ for repository in GITHUB_COMPANY_REPOSITORIES:
     msg = f'These are the stats about *<https://github.com/{GITHUB_COMPANY_NAME}/{repository}|{repository.upper()}>* repository from *{start_date}* to *{end_date}*\n'
     msg += "*Pull requests*\n"
     msg += f'`{len(pull_requests_created)}` _created_\n'
-    reviewed_msg = f' {float(len(by_state.reviewed)/len(by_state.merged))*100:,.2f}% _reviewed_' if len(by_state.merged) > 0 else ''
+    reviewed_msg = f' `{float(len(by_state.reviewed)/len(by_state.merged))*100:,.2f}%` _reviewed_' if len(by_state.merged) > 0 else ''
     msg += f'`{len(by_state.merged)}` _merged_{reviewed_msg}\n'
 
     current_pull_requests_list = group_by_state(get_pull_requests(repository))
