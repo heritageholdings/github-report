@@ -22,7 +22,7 @@ def get_today_programming_pairs():
 	'''
 	:return: a tuple of tuple containing the pairs of the day. if the day is not a pairing day, it returns None
 	'''
-	today = datetime(2023, 5, 25)#datetime.today()
+	today = datetime.today()
 	days_diff_origin = (today - starting_date).days
 	week_diff = int(days_diff_origin / 7)
 	days_diff = days_diff_origin - week_diff * 7
