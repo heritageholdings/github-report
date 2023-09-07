@@ -1,4 +1,4 @@
-name: Heritage Reminder
+name: Heritage Reminder - v1
 on:
   schedule:
     - cron: '0 9 * * 1,4'
