@@ -32,4 +32,4 @@ if PAIR_PROGRAMMING_ENABLED:
 
 if WEEKLY_TEAM_REPORT_ENABLED:
 	send_reminder(
-		":bookmark: Hello team! In order to prepare our dones and todos for tomorrow’s *weekly team call*, we’d really appreciate it if you could *drop us a few lines about your past week* and future plans.\n\nDon’t be stingy, details are important! You can reply in this thread :point_right::skin-tone-2: :thread: ")
+		":bookmark: @here Hello tech team! In order to prepare our dones and todos for tomorrow’s *weekly team call*, we’d really appreciate it if you could *drop us a few lines about your past week* and future plans.\n\nDon’t be stingy, details are important! You can reply in this thread :point_right::skin-tone-2: :thread: ")
