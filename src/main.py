@@ -19,6 +19,8 @@ for repository in GITHUB_COMPANY_REPOSITORIES:
     if start.year != end.year:
         start_date += f'/{start.year}'
         end_date += f'/{end.year}'
+    if len(pull_requests_created) == 0 and len(by_state.merged) == 0:
+        continue
     msg = f'These are the stats about *<https://github.com/{GITHUB_COMPANY_NAME}/{repository}|{repository.upper()}>* repository from *{start_date}* to *{end_date}*\n'
     msg += "*Pull requests*\n"
     msg += f'`{len(pull_requests_created)}` _created_\n'

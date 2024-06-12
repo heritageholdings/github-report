@@ -1,11 +1,16 @@
 import os
 
+import requests
+
 from utils.pair_programming import get_today_programming_pairs
 from utils.slack import send_slack_message_blocks
 
 SLACK_CHANNEL = os.getenv('SLACK_CHANNEL', 'test_feed')
 PAIR_PROGRAMMING_ENABLED = os.getenv('PAIR_PROGRAMMING_ENABLED', 'false').lower() == 'true'
 WEEKLY_TEAM_REPORT_ENABLED = os.getenv('WEEKLY_TEAM_REPORT_ENABLED', 'true').lower() == 'true'
+
+
+
 
 def send_reminder(msg: str):
 	send_slack_message_blocks(SLACK_CHANNEL, [
